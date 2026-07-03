@@ -19,6 +19,7 @@ import { gitStep } from "./steps/git.js";
 import { commandExists, run } from "./run.js";
 import { doctor } from "./doctor.js";
 import { runFeature, type FeatureFlags } from "./feature.js";
+import { runSkill, type SkillFlags } from "./skill.js";
 
 interface Step {
   name: string;
@@ -213,6 +214,24 @@ program
     bmo.say(randomQuote());
     try {
       await runFeature(description, flags);
+    } catch (err) {
+      bmo.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
+program
+  .command("skill")
+  .argument("[query...]", "what kind of skill to search for")
+  .description("Search skills.sh for security-checked skills and install them into this project")
+  .option("--min-installs <n>", "minimum install count to consider a skill (default 1000)")
+  .option("--limit <n>", "max number of skills to fetch and offer (default 20)")
+  .option("--include-unverified", "also show skills with audit warnings or no audits yet")
+  .action(async (query: string[], flags: SkillFlags) => {
+    console.log(BMO_BANNER);
+    bmo.say(randomQuote());
+    try {
+      await runSkill(query.join(" "), flags);
     } catch (err) {
       bmo.error(err instanceof Error ? err.message : String(err));
       process.exit(1);

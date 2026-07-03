@@ -34,7 +34,16 @@ beemo new my-app          # interactive BMO wizard
 beemo new my-app --yes    # accept all defaults
 beemo doctor              # check your environment
 beemo feature             # start a plan → implement → review feature workspace
+beemo skill web design    # find & install security-checked skills from skills.sh
 ```
+
+## Installing skills
+
+Inside a project, `beemo skill <search terms>` searches [skills.sh](https://skills.sh),
+keeps only skills with a healthy install count (`--min-installs`, default 1000)
+whose security audits **all pass**, and lets you pick any number to install into
+`.agents/skills/` without leaving your editor. Pass `--include-unverified` to also
+see skills with audit warnings or no audits yet (their status is shown inline).
 
 ## Feature workflow
 
