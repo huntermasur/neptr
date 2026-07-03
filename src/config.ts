@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 
 export const VITE_TEMPLATES = [
@@ -41,10 +42,9 @@ export const AGENT_CHOICES: AgentChoice[] = [
   { id: "gemini", label: "Gemini CLI", file: "GEMINI.md", hint: "Google Gemini CLI" },
   { id: "codex", label: "OpenAI Codex", file: "AGENTS.md", hint: "uses the shared AGENTS.md" },
   { id: "opencode", label: "opencode", file: "AGENTS.md", hint: "uses the shared AGENTS.md" },
-] as const;
+];
 
 export const AGENT_IDS = AGENT_CHOICES.map((a) => a.id);
-export type AgentId = (typeof AGENT_CHOICES)[number]["id"];
 
 /** Curated shortlist of the most-installed skills on skills.sh (fallback when live fetch fails). */
 export interface SkillChoice {
@@ -143,9 +143,17 @@ export function configFromFlags(name: string | undefined, flags: NewFlags): Part
   }
   partial.mcpServers = parseList(flags.mcp, MCP_SERVERS, "MCP server");
   if (flags.skills !== undefined) {
-    partial.skills = flags.skills === "none" || flags.skills.trim() === ""
+    const skills = flags.skills === "none" || flags.skills.trim() === ""
       ? []
       : flags.skills.split(",").map((s) => s.trim()).filter(Boolean);
+    // These go onto an `npx skills add` command line (through a shell on Windows),
+    // so reject anything that isn't a plain owner/repo[@skill] source.
+    for (const skill of skills) {
+      if (!/^[\w.-]+\/[\w.-]+(@[\w.-]+)?$/.test(skill)) {
+        throw new Error(`Invalid skill "${skill}". Expected owner/repo or owner/repo@skill`);
+      }
+    }
+    partial.skills = skills;
   }
   partial.agents = parseList(flags.agents, AGENT_IDS, "agent");
   if (flags.docker !== undefined) partial.docker = flags.docker;
@@ -158,9 +166,14 @@ export function configFromFlags(name: string | undefined, flags: NewFlags): Part
 /** Fill any gaps in a partial config with defaults (used by --yes mode). */
 export function withDefaults(partial: Partial<BeemoConfig>): BeemoConfig {
   if (!partial.projectName) throw new Error("Project name is required in --yes mode (beemo new <name> --yes)");
+  const targetDir = path.resolve(process.cwd(), partial.projectName);
+  // The interactive wizard checks this too; --yes skips the wizard, so guard here as well.
+  if (fs.existsSync(targetDir)) {
+    throw new Error(`Directory ${partial.projectName} already exists here. Beemo does not overwrite friends.`);
+  }
   return {
     projectName: partial.projectName,
-    targetDir: path.resolve(process.cwd(), partial.projectName),
+    targetDir,
     template: partial.template ?? DEFAULTS.template,
     mcpServers: partial.mcpServers ?? DEFAULTS.mcpServers,
     skills: partial.skills ?? DEFAULTS.skills,

@@ -31,12 +31,15 @@ Rules of thumb:
 | Fix a bug (non-obvious cause) | ✅ | — | — | — | — | — |
 | Add/change a function's tricky logic | ✅ | if contract changed | — | — | — | — |
 | Add a feature | as needed | ✅ | ✅ | — | — | if user-facing |
-| Add/move/delete files or folders | — | ✅ | — | ✅ (map **and** index) | — | — |
+| Add/move/delete files or folders | — | if the module has a README | — | ✅ (map **and** index) | — | — |
 | Add a dependency | — | — | ✅ | ✅ (map **and** index) | if significant | — |
 | Change architecture, boundaries, or patterns | — | — | ✅ | ✅ (map **and** index) | ✅ | — |
-| Add an environment variable | — | — | ✅ (env section) | — | — | ✅ |
+| Add an environment variable | — | — | ✅ (env section) | — | — | — |
 | Change build/dev/deploy workflow | — | — | ✅ | — | — | ✅ + `docs/COMMANDS.md` |
 | Add/change an npm script or tooling command | — | — | — | — | — | → `docs/COMMANDS.md` |
+
+Environment variables additionally require `.env.example` and your local `.env` to stay
+in sync — see the env section of [../../.agents/AI_INSTRUCTIONS.md](../../.agents/AI_INSTRUCTIONS.md).
 
 ## ADR format
 

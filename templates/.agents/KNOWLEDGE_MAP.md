@@ -26,7 +26,8 @@ Last updated: {{date}}.
 | --- | --- |
 | `src/` | Application source (Vite `{{template}}` layout) |
 | `public/` | Static assets served as-is |
-| `.agents/` | Agent rules, knowledge map, index, skills (you are here) |
+| `.agents/` | Agent rules, knowledge map, index (you are here) |
+| `.agents/skills/` | Installed skills.sh skills |
 | `.agents/features/` | Feature workspaces: plan/tasks/status/notes per feature |
 | `docs/` | Project documentation: commands, architecture, domain, user files |
 | `docs/architecture/` | Architecture overview, specs, and ADRs |
@@ -35,8 +36,9 @@ Last updated: {{date}}.
 | `docs/files/` | Files and documents provided by the user |
 {{extraFolderRows}}
 
-> Keep this table in sync with reality. A folder that exists but isn't listed here —
-> or vice versa — means this map is broken.
+> Keep this table in sync with reality: every tracked project folder belongs here, and
+> every row must still exist. Generated and tool folders (`node_modules/`, `dist/`,
+> `.codegraph/`) don't count.
 
 ## Key concepts
 

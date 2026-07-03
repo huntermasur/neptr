@@ -41,6 +41,16 @@ export function templateVars(config: BeemoConfig): TemplateVars {
     toolingLines.push("- No MCP servers or skills configured yet.");
   }
 
+  const folderRows: string[] = [];
+  if (config.agents.includes("copilot")) folderRows.push("| `.github/` | GitHub Copilot instructions |");
+  if (config.agents.includes("cursor")) folderRows.push("| `.cursor/` | Cursor rules |");
+  if (config.docker) folderRows.push("| `Dockerfile`, `docker-compose.yml` | Container setup for dev and prod |");
+
+  // Vanilla templates ship no vite.config; the others use .ts or .js to match the template.
+  const viteConfigFile = config.template.startsWith("vanilla")
+    ? undefined
+    : `vite.config.${config.template.endsWith("-ts") ? "ts" : "js"}`;
+
   return {
     projectName: config.projectName,
     template: config.template,
@@ -51,7 +61,10 @@ export function templateVars(config: BeemoConfig): TemplateVars {
     codegraphOrientation: config.mcpServers.includes("codegraph")
       ? "For code questions (where is X defined, what calls Y), query the codegraph MCP server before manual exploration."
       : "",
-    extraFolderRows: config.docker ? "| `Dockerfile`, `docker-compose.yml` | Container setup for dev and prod |" : "",
+    extraFolderRows: folderRows.join("\n"),
+    viteConfigRow: viteConfigFile
+      ? `| [../${viteConfigFile}](../${viteConfigFile}) | Vite build/dev configuration |`
+      : "",
     extraIndexRows: [
       ...(config.mcpServers.length
         ? [`| [../.mcp.json](../.mcp.json) | MCP server configuration (${config.mcpServers.join(", ")}) |`]

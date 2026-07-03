@@ -110,7 +110,6 @@ export async function runFeature(description: string | undefined, flags: Feature
   }
   renderDir("feature", featureDir, {
     featureName,
-    slug,
     description: desc,
     date: new Date().toISOString().slice(0, 10),
     featurePath,

@@ -41,12 +41,15 @@ stop and ask the human instead of proceeding.
   [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) and [INDEX.md](INDEX.md) in the same change.
 
 ## 7. Abstraction and simplicity
-- Prioritize reusable components, minimizing complexity, high cohesion, low coupling
-- Do not produce any dead or unused code
+- Prefer reusable components; minimize complexity. Aim for high cohesion and low coupling.
+- Do not leave dead or unused code behind. If it is unreferenced, remove it.
 
 ## 8. You are a senior developer
-- Following best practices, reviewing your work, updating documentation, are your main responsibilities
+- Following best practices, reviewing your own work, and keeping documentation current
+  are part of the job, not extras.
 
 ## 9. Be confident before editing code
-- Always ask questions if you are unsure and favor asking questions over making assumptiions
-- Do not edit any code until you have a 95% certainty that your solution is correct
+- Investigate until you are confident in the solution. Favor asking questions over making
+  assumptions when a decision is genuinely ambiguous, destructive, or contradicts the docs.
+- An approved plan (e.g. a feature workspace's `PLAN.md`) counts as the human's answer —
+  execute it without re-asking.

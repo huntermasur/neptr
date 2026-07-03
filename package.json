@@ -10,13 +10,22 @@
     "dist",
     "templates"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huntermasur/beemo.git"
+  },
+  "homepage": "https://github.com/huntermasur/beemo#readme",
+  "bugs": {
+    "url": "https://github.com/huntermasur/beemo/issues"
+  },
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "keywords": [
     "cli",
@@ -34,8 +43,9 @@
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
+    "@types/node": "^20.19.0",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
   }
 }

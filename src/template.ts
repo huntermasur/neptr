@@ -7,9 +7,20 @@ export const TEMPLATES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta
 
 export type TemplateVars = Record<string, string>;
 
-/** Replace every {{key}} with vars[key]; unknown keys are left intact so they're easy to spot. */
+/**
+ * Replace every {{key}} with vars[key]; unknown keys are left intact so they're easy
+ * to spot. A line whose placeholders all rendered empty (e.g. an optional table row)
+ * is dropped entirely so it doesn't leave a stray blank line.
+ */
 export function renderString(content: string, vars: TemplateVars): string {
-  return content.replace(/\{\{(\w+)\}\}/g, (match, key: string) => vars[key] ?? match);
+  const out: string[] = [];
+  for (const line of content.split("\n")) {
+    const hadPlaceholder = /\{\{\w+\}\}/.test(line);
+    const rendered = line.replace(/\{\{(\w+)\}\}/g, (match, key: string) => vars[key] ?? match);
+    if (hadPlaceholder && rendered.trim() === "") continue;
+    out.push(rendered);
+  }
+  return out.join("\n");
 }
 
 /** Render a single template file to a destination path, creating parent dirs. */

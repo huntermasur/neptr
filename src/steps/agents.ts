@@ -2,8 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { AGENT_CHOICES, type BeemoConfig } from "../config.js";
 
-/** Shared directive body every agent instruction file gets. */
-function agentBody(projectName: string): string {
+/**
+ * Shared directive body every agent instruction file gets. `prefix` rewrites the
+ * link targets for files that live below the project root (e.g. `../../` for
+ * .cursor/rules/beemo.mdc) so the markdown links resolve; labels stay root-relative.
+ */
+function agentBody(projectName: string, prefix: string): string {
+  const at = (p: string) => `${prefix}${p}`;
   return `# ${projectName} — Agent Instructions
 
 You are working in **${projectName}**, a project scaffolded with Beemo. Before you do
@@ -11,29 +16,29 @@ anything else, read the agent hub. This is mandatory.
 
 ## Required reading — always, no exceptions
 
-Read **every** file in \`.agents/\` before starting any task, however small:
+Read these five files before starting any task, however small:
 
-- [.agents/CONSTITUTION.md](.agents/CONSTITUTION.md) — non-negotiable principles
-- [.agents/AI_INSTRUCTIONS.md](.agents/AI_INSTRUCTIONS.md) — the workflow you must follow
-- [.agents/KNOWLEDGE_MAP.md](.agents/KNOWLEDGE_MAP.md) — where everything lives
-- [.agents/INDEX.md](.agents/INDEX.md) — direct links to important files
-- [docs/COMMANDS.md](docs/COMMANDS.md) — how to run, build, and verify
+- [.agents/CONSTITUTION.md](${at(".agents/CONSTITUTION.md")}) — non-negotiable principles
+- [.agents/AI_INSTRUCTIONS.md](${at(".agents/AI_INSTRUCTIONS.md")}) — the workflow you must follow
+- [.agents/KNOWLEDGE_MAP.md](${at(".agents/KNOWLEDGE_MAP.md")}) — where everything lives
+- [.agents/INDEX.md](${at(".agents/INDEX.md")}) — direct links to important files
+- [docs/COMMANDS.md](${at("docs/COMMANDS.md")}) — how to run, build, and verify
 
 Do not skip this step or assume you already know the contents. These files override
 any assumptions you might have.
 
 ## Read as needed — skim by context
 
-You do **not** have to read all of these, only what the current task touches:
+The rest of \`.agents/\` and \`docs/\` is read on demand, only what the current task touches:
 
-- \`.agents/skills/\` — installed skills; skim and use the ones relevant to the task
-- \`.agents/features/\` — in-flight feature workspaces; if your task relates to a
+- [.agents/skills/](${at(".agents/skills/")}) — installed skills; skim and use the ones relevant to the task
+- [.agents/features/](${at(".agents/features/")}) — in-flight feature workspaces; if your task relates to a
   feature that has a folder here, read its STATUS.md and PLAN.md first
-- \`docs/\` — architecture, ADRs, and guides; read only the parts your change affects
+- [docs/](${at("docs/")}) — architecture, ADRs, and guides; read only the parts your change affects
 
 ## Then follow the workflow
 
-Follow [.agents/AI_INSTRUCTIONS.md](.agents/AI_INSTRUCTIONS.md) for the full working
+Follow [.agents/AI_INSTRUCTIONS.md](${at(".agents/AI_INSTRUCTIONS.md")}) for the full working
 process, including the documentation policy you must apply before finishing.
 `;
 }
@@ -44,8 +49,6 @@ process, including the documentation policy you must apply before finishing.
  * AGENTS.md) are written once.
  */
 export async function agentsStep(config: BeemoConfig): Promise<string> {
-  const body = agentBody(config.projectName);
-
   // AGENTS.md is always included, regardless of selection.
   const files = new Set<string>(["AGENTS.md"]);
   for (const id of config.agents) {
@@ -54,10 +57,11 @@ export async function agentsStep(config: BeemoConfig): Promise<string> {
   }
 
   for (const relPath of files) {
-    let content = body;
+    const depth = relPath.split("/").length - 1;
+    let content = agentBody(config.projectName, "../".repeat(depth));
     // Cursor rule files need frontmatter so the rule is always applied.
     if (relPath.endsWith(".mdc")) {
-      content = `---\ndescription: ${config.projectName} agent instructions\nalwaysApply: true\n---\n\n${body}`;
+      content = `---\ndescription: ${config.projectName} agent instructions\nalwaysApply: true\n---\n\n${content}`;
     }
     const destPath = path.join(config.targetDir, relPath);
     fs.mkdirSync(path.dirname(destPath), { recursive: true });

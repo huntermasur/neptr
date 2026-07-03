@@ -28,8 +28,8 @@ const SERVER_CONFIGS: Record<McpServer, object> = {
   },
 };
 
-export async function mcpStep(config: BeemoConfig): Promise<string | void> {
-  if (!config.mcpServers.length) return "no servers selected";
+/** Only runs when at least one server is selected (gated by `enabled` in cli.ts). */
+export async function mcpStep(config: BeemoConfig): Promise<void> {
   const mcpServers = Object.fromEntries(config.mcpServers.map((s) => [s, SERVER_CONFIGS[s]]));
   const file = path.join(config.targetDir, ".mcp.json");
   fs.writeFileSync(file, JSON.stringify({ mcpServers }, null, 2) + "\n");

@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -41,7 +42,7 @@ const STEPS: Step[] = [
     name: "Generate AI & docs layer",
     enabled: () => true,
     run: aiDocsStep,
-    fix: () => "re-run: beemo add docs (or copy templates from the beemo repo)",
+    fix: () => "copy templates/.agents and templates/docs from the beemo repo into the project",
   },
   {
     name: "Generate agent instruction files",
@@ -122,7 +123,12 @@ async function scaffold(config: BeemoConfig): Promise<void> {
   const failed = results.filter((r) => r.status === "failed");
   const lines = results
     .filter((r) => r.status !== "skipped")
-    .map((r) => `${r.status === "ok" ? pc.green("✔") : pc.red("✘")} ${r.name}${r.status === "failed" && r.fix ? pc.dim(`  → fix: cd ${config.projectName} && ${r.fix}`) : ""}`);
+    .map((r) => {
+      let line = `${r.status === "ok" ? pc.green("✔") : pc.red("✘")} ${r.name}`;
+      if (r.note) line += pc.dim(`  — ${r.note}`);
+      if (r.status === "failed" && r.fix) line += pc.dim(`\n   → fix (in ${config.projectName}/): ${r.fix}`);
+      return line;
+    });
   p.note(lines.join("\n"), failed.length ? "Done, with some boo-boos" : "All done!");
 
   if (failed.length === 0) {
@@ -150,12 +156,16 @@ async function scaffold(config: BeemoConfig): Promise<void> {
   );
 }
 
+// package.json ships alongside dist/ in the package, so this resolves both from
+// src/ (dev) and from the bundled dist/cli.js.
+const { version } = createRequire(import.meta.url)("../package.json") as { version: string };
+
 const program = new Command();
 
 program
   .name("beemo")
   .description("BMO-themed project scaffolding — Vite apps with an AI-ready setup baked in")
-  .version("0.1.0");
+  .version(version);
 
 program
   .command("new")

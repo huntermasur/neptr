@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
-import { run } from "../run.js";
+import { commandExists, run } from "../run.js";
 import type { BeemoConfig } from "../config.js";
 
 const EXTRA_IGNORES = `
@@ -16,6 +16,14 @@ const EXTRA_IGNORES = `
  * the scaffold produced as the initial commit.
  */
 export async function gitStep(config: BeemoConfig): Promise<void> {
+  // `git commit` fails cryptically without an identity — check up front so the
+  // summary note tells the user exactly what to do.
+  if (!(await commandExists("git", ["config", "user.email"]))) {
+    throw new Error(
+      'git identity not set — run: git config --global user.name "Your Name" && git config --global user.email you@example.com',
+    );
+  }
+
   const gitignorePath = path.join(config.targetDir, ".gitignore");
   const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, "utf8") : "";
   if (!existing.includes(".codegraph/")) {

@@ -30,6 +30,18 @@ const CHECKS: Check[] = [
   { name: "npm", required: true, run: () => versionOf("npm") },
   { name: "git", required: true, run: () => versionOf("git") },
   {
+    name: "git identity",
+    required: false,
+    run: async () => {
+      try {
+        const res = await run("git", ["config", "user.email"], { stdio: "pipe", timeout: 15_000 });
+        return { ok: true, detail: String(res.stdout ?? "").trim() };
+      } catch {
+        return { ok: false, detail: "user.name/user.email not set — the git init step would fail" };
+      }
+    },
+  },
+  {
     name: "Docker daemon",
     required: false,
     run: async () => {

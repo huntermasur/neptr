@@ -17,7 +17,7 @@ important files are added, moved, or removed.** Last updated: {{date}}.
 | File | Role |
 | --- | --- |
 | [../package.json](../package.json) | Dependencies and npm scripts |
-| [../vite.config.*](../) | Vite build/dev configuration |
+{{viteConfigRow}}
 | `.env` (gitignored) | Environment variables — document each in [../docs/architecture/ARCHITECTURE.md](../docs/architecture/ARCHITECTURE.md) |
 | [../.env.example](../.env.example) | Committed template for `.env`; keep every variable in sync here |
 {{extraIndexRows}}

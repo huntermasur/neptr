@@ -1,32 +1,24 @@
 # AI Working Instructions
 
 Workflow rules for agents in {{projectName}}. The constitution
-([CONSTITUTION.md](CONSTITUTION.md)) always wins over anything here.
+([CONSTITUTION.md](CONSTITUTION.md)) always wins over anything here. The root agent
+file (AGENTS.md / CLAUDE.md / etc.) lists the required reading; this file defines the
+workflow to follow once you have read it.
 
-## The `.agents/` hub
-
-| File | What it's for |
-| --- | --- |
-| [CONSTITUTION.md](CONSTITUTION.md) | Non-negotiable principles — read once, never violate |
-| [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) | Where everything lives — folders, docs, concepts |
-| [INDEX.md](INDEX.md) | Direct links to important files |
-| [skills/](skills/) | Installed skills.sh skills (added by agents/tooling) |
-| [features/](features/) | Feature workspaces created by `beemo feature` (plan → implement → review) |
-
-Build, run, and documentation guidance now live under [../docs/](../docs/): commands in
-[../docs/COMMANDS.md](../docs/COMMANDS.md), architecture in
-[../docs/architecture/](../docs/architecture/), and the documentation policy in
+Build and run commands live in [../docs/COMMANDS.md](../docs/COMMANDS.md), architecture
+docs in [../docs/architecture/](../docs/architecture/), and the documentation policy in
 [../docs/domain/DOMAIN_DOCUMENTATION.md](../docs/domain/DOMAIN_DOCUMENTATION.md).
 
 ## Before you start any task
-1. Read [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) to orient yourself, and use
+1. Orient yourself with [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md), and use
    [INDEX.md](INDEX.md) to jump to the files involved.
    {{codegraphOrientation}}
 2. Check [../docs/COMMANDS.md](../docs/COMMANDS.md) for how to run things.
 3. If [features/](features/) contains feature folders, check each one's `STATUS.md` —
    a task that relates to an in-flight feature must follow that folder's `phases/`
    instructions.
-4. Look for existing utilities/patterns before writing new ones.
+4. If a skill in [skills/](skills/) matches the task, read it and apply it.
+5. Look for existing utilities/patterns before writing new ones.
 
 ## Environment variables & secrets
 - Configuration and secrets live in `.env` at the project root. **`.env` is gitignored —
@@ -60,7 +52,8 @@ Build, run, and documentation guidance now live under [../docs/](../docs/): comm
      [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) (folder map + diagram) and
      [INDEX.md](INDEX.md) (file links) in the same change, plus
      [../docs/architecture/ARCHITECTURE.md](../docs/architecture/ARCHITECTURE.md) and a
-     new ADR. The work is not done until all reflect reality.**
+     new ADR. Bump the "Last updated" date on any map/index you touch. The work is not
+     done until all reflect reality.**
    - If you added or changed a script, update [../docs/COMMANDS.md](../docs/COMMANDS.md).
 3. Summarize what you did, what you verified, and which docs you updated.
 
