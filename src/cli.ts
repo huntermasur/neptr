@@ -17,6 +17,7 @@ import { envStep } from "./steps/env.js";
 import { gitStep } from "./steps/git.js";
 import { commandExists, run } from "./run.js";
 import { doctor } from "./doctor.js";
+import { runFeature, type FeatureFlags } from "./feature.js";
 
 interface Step {
   name: string;
@@ -189,6 +190,23 @@ program
     console.log(BMO_BANNER);
     bmo.say("I will go into your computer and check it like a magic doctor!\n");
     await doctor();
+  });
+
+program
+  .command("feature")
+  .argument("[description]", "what the feature should do")
+  .description("Create a plan → implement → review workspace in .agents/features/")
+  .option("-n, --name <name>", "short feature name (becomes the folder slug)")
+  .option("-y, --yes", "no prompts (requires --name)")
+  .action(async (description: string | undefined, flags: FeatureFlags) => {
+    console.log(BMO_BANNER);
+    bmo.say(randomQuote());
+    try {
+      await runFeature(description, flags);
+    } catch (err) {
+      bmo.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
   });
 
 program.parseAsync();

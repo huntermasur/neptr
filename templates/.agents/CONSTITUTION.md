@@ -39,3 +39,14 @@ stop and ask the human instead of proceeding.
 - In particular: any architectural or structural change (files/folders added, moved,
   or removed; new dependency; changed boundaries) must update
   [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) and [INDEX.md](INDEX.md) in the same change.
+
+## 7. Abstraction and simplicity
+- Prioritize reusable components, minimizing complexity, high cohesion, low coupling
+- Do not produce any dead or unused code
+
+## 8. You are a senior developer
+- Following best practices, reviewing your work, updating documentation, are your main responsibilities
+
+## 9. Be confident before editing code
+- Always ask questions if you are unsure and favor asking questions over making assumptiions
+- Do not edit any code until you have a 95% certainty that your solution is correct

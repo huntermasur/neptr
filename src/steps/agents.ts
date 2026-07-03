@@ -27,6 +27,8 @@ any assumptions you might have.
 You do **not** have to read all of these, only what the current task touches:
 
 - \`.agents/skills/\` — installed skills; skim and use the ones relevant to the task
+- \`.agents/features/\` — in-flight feature workspaces; if your task relates to a
+  feature that has a folder here, read its STATUS.md and PLAN.md first
 - \`docs/\` — architecture, ADRs, and guides; read only the parts your change affects
 
 ## Then follow the workflow

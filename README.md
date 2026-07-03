@@ -33,7 +33,18 @@ npm link        # makes `beemo` available globally
 beemo new my-app          # interactive BMO wizard
 beemo new my-app --yes    # accept all defaults
 beemo doctor              # check your environment
+beemo feature             # start a plan → implement → review feature workspace
 ```
+
+## Feature workflow
+
+Inside a project, `beemo feature` breaks a feature into three agent-driven phases
+so you can use a smart (expensive) model to plan and review while a cheaper model
+does the coding. It asks for a name and description, scaffolds
+`.agents/features/<slug>/` (plan, task list, status, notes, and per-phase agent
+instructions), and prints three copy-paste prompts — one per phase. Run each
+prompt in a fresh agent session; every phase ends by updating the workspace's
+`STATUS.md` and pausing so you stay in control between phases.
 
 ## Development
 

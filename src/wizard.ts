@@ -2,6 +2,7 @@ import * as p from "@clack/prompts";
 import path from "node:path";
 import fs from "node:fs";
 import pc from "picocolors";
+import { bail, ensure } from "./prompts.js";
 import {
   AGENT_CHOICES,
   CURATED_SKILLS,
@@ -21,16 +22,6 @@ const MCP_HINTS: Record<McpServer, string> = {
   context7: "up-to-date library docs for the agent",
   github: "PRs, issues, and repo workflows",
 };
-
-function bail(): never {
-  p.cancel("BMO powers down... come back and play soon!");
-  process.exit(0);
-}
-
-function ensure<T>(value: T | symbol): T {
-  if (p.isCancel(value)) bail();
-  return value as T;
-}
 
 /**
  * Interactive wizard. Anything already provided via flags (in `partial`) is

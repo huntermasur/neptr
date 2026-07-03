@@ -15,9 +15,13 @@ skills.sh skills, codegraph indexing, and Docker.
 - Test scaffolds go in a throwaway directory (scratchpad), never inside this repo
 
 ## Architecture
-- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`
+- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `feature`
 - `src/theme.ts` — BMO ASCII art, palette, quotes; all user-facing output goes through this
 - `src/wizard.ts` — @clack/prompts flow producing a `BeemoConfig`
+- `src/prompts.ts` — shared clack helpers (`bail`, `ensure` cancel handling)
+- `src/feature.ts` — `beemo feature`: scaffolds a plan → implement → review workspace
+  at `.agents/features/<slug>/` in the current project (from `templates/feature/`)
+  and prints per-phase copy-paste agent prompts; never calls an LLM itself
 - `src/config.ts` — `BeemoConfig` type, flag merging, `--yes` defaults
 - `src/template.ts` — copies `templates/` trees, replacing `{{var}}` placeholders
 - `src/run.ts` — execa wrapper with themed spinners

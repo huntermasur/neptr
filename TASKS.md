@@ -64,7 +64,20 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] Dev server verified: HTTP 200 with correct title
 - [x] TASKS.md fully checked; README/CLAUDE.md current
 
+## M9 — `beemo feature` (plan → implement → review workspaces)
+- [x] `src/prompts.ts` — shared `bail`/`ensure` clack helpers (extracted from wizard)
+- [x] `src/feature.ts` — `beemo feature` flow: name/description prompts, slugify,
+      `.agents/` detection with non-beemo bootstrap confirm, non-clobber guard
+- [x] `templates/feature/` — PLAN/TASKS/STATUS/NOTES + `phases/{plan,implement,review}.md`
+- [x] `templates/.agents/features/README.md` — folder convention, ships with new scaffolds
+- [x] Discovery wiring: AI_INSTRUCTIONS hub row + before-you-start item, KNOWLEDGE_MAP
+      folder row, agents.ts read-as-needed bullet
+- [x] Side-fix: moved `templates/docs/commands/COMMANDS.md` → `templates/docs/COMMANDS.md`
+      so generated `docs/COMMANDS.md` links resolve
+- [x] Verified: scaffold + `beemo feature` end to end in a scratchpad project
+
 ## Backlog (future ideas)
 - [ ] `beemo add <feature>` — retrofit docs/docker/mcp/skills onto an existing project
+- [ ] `beemo feature list` — show feature workspaces and their `Status:` lines
 - [ ] Live docker compose build verification once Docker Desktop is installed
 - [ ] Publish to npm so `npx beemo-cli` works without cloning

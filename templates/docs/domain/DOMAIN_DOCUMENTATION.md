@@ -35,8 +35,8 @@ Rules of thumb:
 | Add a dependency | — | — | ✅ | ✅ (map **and** index) | if significant | — |
 | Change architecture, boundaries, or patterns | — | — | ✅ | ✅ (map **and** index) | ✅ | — |
 | Add an environment variable | — | — | ✅ (env section) | — | — | ✅ |
-| Change build/dev/deploy workflow | — | — | ✅ | — | — | ✅ + `docs/commands/COMMANDS.md` |
-| Add/change an npm script or tooling command | — | — | — | — | — | → `docs/commands/COMMANDS.md` |
+| Change build/dev/deploy workflow | — | — | ✅ | — | — | ✅ + `docs/COMMANDS.md` |
+| Add/change an npm script or tooling command | — | — | — | — | — | → `docs/COMMANDS.md` |
 
 ## ADR format
 

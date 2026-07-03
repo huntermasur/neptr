@@ -27,6 +27,7 @@ Last updated: {{date}}.
 | `src/` | Application source (Vite `{{template}}` layout) |
 | `public/` | Static assets served as-is |
 | `.agents/` | Agent rules, knowledge map, index, skills (you are here) |
+| `.agents/features/` | Feature workspaces: plan/tasks/status/notes per feature |
 | `docs/` | Project documentation: commands, architecture, domain, user files |
 | `docs/architecture/` | Architecture overview, specs, and ADRs |
 | `docs/architecture/adr/` | Numbered architectural decision records |

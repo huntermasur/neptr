@@ -11,6 +11,7 @@ Workflow rules for agents in {{projectName}}. The constitution
 | [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) | Where everything lives — folders, docs, concepts |
 | [INDEX.md](INDEX.md) | Direct links to important files |
 | [skills/](skills/) | Installed skills.sh skills (added by agents/tooling) |
+| [features/](features/) | Feature workspaces created by `beemo feature` (plan → implement → review) |
 
 Build, run, and documentation guidance now live under [../docs/](../docs/): commands in
 [../docs/COMMANDS.md](../docs/COMMANDS.md), architecture in
@@ -22,7 +23,10 @@ Build, run, and documentation guidance now live under [../docs/](../docs/): comm
    [INDEX.md](INDEX.md) to jump to the files involved.
    {{codegraphOrientation}}
 2. Check [../docs/COMMANDS.md](../docs/COMMANDS.md) for how to run things.
-3. Look for existing utilities/patterns before writing new ones.
+3. If [features/](features/) contains feature folders, check each one's `STATUS.md` —
+   a task that relates to an in-flight feature must follow that folder's `phases/`
+   instructions.
+4. Look for existing utilities/patterns before writing new ones.
 
 ## Environment variables & secrets
 - Configuration and secrets live in `.env` at the project root. **`.env` is gitignored —
