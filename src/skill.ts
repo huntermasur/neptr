@@ -145,7 +145,7 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
       `Found ${candidates.length} match(es), but none have passed every security audit yet. ` +
         `Re-run with --include-unverified to see them (and their audit status).`,
     );
-    p.outro("Playing it safe — nothing installed.");
+    p.outro("Pie tin stays empty — nothing installed.");
     return;
   }
 
@@ -198,9 +198,9 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
   }
 
   if (ok.length) {
-    neptr.success(`New skills installed! ${pc.dim("Restart your agent so it picks them up.")}`);
+    neptr.success(`Fresh skills, hot from the oven! ${pc.dim("Restart your agent so it picks them up.")}`);
   } else {
     neptr.warn("None of the skills installed — check the retry commands above.");
   }
-  p.outro("NEPTR went shopping for skills!");
+  p.outro("NEPTR baked in some new skills!");
 }

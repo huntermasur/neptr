@@ -69,6 +69,13 @@ export function toInstallArg(source: string, skillId: string): string {
   return `${source}@${skillId}`;
 }
 
+/** Turn a non-200 status into a friendly, actionable message. */
+function describeHttpError(status: number, service: string): string {
+  if (status === 429) return `${service} is rate-limiting us (HTTP 429). Wait a minute, then try again.`;
+  if (status >= 500) return `${service} had a server error (HTTP ${status}). Try again shortly.`;
+  return `${service} search returned HTTP ${status}`;
+}
+
 /**
  * Search skills.sh. Returns up to `limit` results ordered as the API ranks them.
  * Throws on a non-200 response or malformed JSON so the caller can report it.
@@ -77,7 +84,7 @@ export async function searchSkills(query: string, limit: number, fetchImpl: Fetc
   const url = `${BASE}/api/search?q=${encodeURIComponent(query)}`;
   const { status, text } = await fetchText(url, fetchImpl);
   if (status !== 200) {
-    throw new Error(`skills.sh search returned HTTP ${status}`);
+    throw new Error(describeHttpError(status, "skills.sh"));
   }
   let parsed: { skills?: SkillSearchResult[] };
   try {

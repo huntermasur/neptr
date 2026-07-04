@@ -15,7 +15,7 @@ skills.sh skills, codegraph indexing, and Docker.
 - Test scaffolds go in a throwaway directory (scratchpad), never inside this repo
 
 ## Architecture
-- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `feature`
+- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `feature`, `skill`, `mcp`
 - `src/theme.ts` — NEPTR ASCII art, palette, quotes; all user-facing output goes through this
 - `src/wizard.ts` — @clack/prompts flow producing a `NEPTRConfig`
 - `src/prompts.ts` — shared clack helpers (`bail`, `ensure` cancel handling)
@@ -24,6 +24,13 @@ skills.sh skills, codegraph indexing, and Docker.
   and prints per-phase copy-paste agent prompts; never calls an LLM itself. The plan
   phase discovers reusable skills with `neptr skill --search-only`; the implement
   phase installs them with `neptr skill --yes` (both defined in `src/skill.ts`).
+- `src/skill.ts` / `src/skills-registry.ts` — `neptr skill`: searches skills.sh,
+  filters to popular skills whose security audits all pass, and installs the
+  selected ones into `.agents/skills/` via `npx skills add`.
+- `src/mcp.ts` / `src/mcp-registry.ts` — `neptr mcp`: searches skillful.sh's public
+  JSON API for MCP servers, filters by security grade (`--min-grade`, default A),
+  and merges the selected ones into the project's `.mcp.json` (npm → `npx -y`,
+  PyPI → `uvx`). Mirrors `neptr skill`'s `--search-only`/`--yes` planning modes.
 - `src/config.ts` — `NEPTRConfig` type, flag merging, `--yes` defaults
 - `src/template.ts` — copies `templates/` trees, replacing `{{var}}` placeholders
 - `src/run.ts` — execa wrapper with themed spinners

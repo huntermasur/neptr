@@ -2,7 +2,7 @@ import * as p from "@clack/prompts";
 
 /** Cancel the current command in NEPTR style. */
 export function bail(): never {
-  p.cancel("NEPTR powers down... come back and play soon!");
+  p.cancel("NEPTR powers down... I'll be here when you need another pie.");
   process.exit(0);
 }
 

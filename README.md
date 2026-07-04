@@ -1,6 +1,6 @@
 # NEPTR 🤖
 
-> "Who wants to play video games?"
+> "NEPTR, deploy!"
 
 NEPTR is a NEPTR-themed CLI for starting new projects the right way. It scaffolds a
 [Vite](https://vitejs.dev) app, then layers on a complete AI-ready setup so every
@@ -35,6 +35,7 @@ neptr new my-app --yes    # accept all defaults
 neptr doctor              # check your environment
 neptr feature             # start a plan → implement → review feature workspace
 neptr skill web design    # find & install security-checked skills from skills.sh
+neptr mcp postgres        # find & install security-checked MCP servers from skillful.sh
 ```
 
 ## Installing skills
@@ -49,6 +50,21 @@ Two non-interactive modes drive the feature workflow: `--search-only` lists the
 audit-passing matches and installs nothing (used by the plan phase to discover
 skills), and `--yes` installs every shown skill without prompting (used by the
 implement phase to add the skills the plan recommended).
+
+## Installing MCP servers
+
+Inside a project, `neptr mcp <search terms>` searches [skillful.sh](https://skillful.sh)
+for MCP servers, keeps only those whose security grade clears the bar
+(`--min-grade`, default `A`), and lets you pick any number to add to the
+project's `.mcp.json` without leaving your editor. npm packages are wired up as
+`npx -y <package>` and PyPI packages as `uvx <package>`; existing `.mcp.json`
+entries are preserved. Pass `--include-unverified` to also see servers that are
+unscanned or below the grade bar (their grade is shown inline).
+
+As with `neptr skill`, `--search-only` lists the grade-passing matches without
+installing (for the plan phase) and `--yes` adds every shown server without
+prompting (for the implement phase). Servers that aren't npm or PyPI packages
+can't be auto-wired — NEPTR lists their repos so you can configure them by hand.
 
 ## Feature workflow
 

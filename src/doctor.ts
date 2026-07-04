@@ -85,6 +85,6 @@ export async function doctor(): Promise<void> {
     neptr.error(`${requiredFailures} required check(s) failed — fix those before running neptr new.`);
     process.exitCode = 1;
   } else {
-    neptr.success("Everything checks out. Who wants to scaffold a project?");
+    neptr.success("Everything checks out. Ready to bake a new project?");
   }
 }

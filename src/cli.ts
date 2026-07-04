@@ -20,6 +20,7 @@ import { commandExists, run } from "./run.js";
 import { doctor } from "./doctor.js";
 import { runFeature, type FeatureFlags } from "./feature.js";
 import { runSkill, type SkillFlags } from "./skill.js";
+import { runMcp, type McpFlags } from "./mcp.js";
 
 interface Step {
   name: string;
@@ -115,9 +116,12 @@ async function scaffold(config: NEPTRConfig): Promise<void> {
       spinner.stop(`${pc.red("✘")} ${step.name}`);
       if (step.critical) {
         neptr.error(`I could not even start: ${message}`);
-        process.exit(1);
+        // Exit gracefully (drain the loop) instead of force-closing handles,
+        // which crashes libuv on Windows when network/child I/O is mid-teardown.
+        process.exitCode = 1;
+        return;
       }
-      neptr.warn(`${step.name} did not work, but I kept going. You can do it by hand later.`);
+      neptr.warn(`${step.name} burnt a little, but I kept baking. You can finish it by hand later.`);
     }
   }
 
@@ -130,7 +134,7 @@ async function scaffold(config: NEPTRConfig): Promise<void> {
       if (r.status === "failed" && r.fix) line += pc.dim(`\n   → fix (in ${config.projectName}/): ${r.fix}`);
       return line;
     });
-  p.note(lines.join("\n"), failed.length ? "Done, with some boo-boos" : "All done!");
+  p.note(lines.join("\n"), failed.length ? "Done, but the pie has burnt edges" : "Fresh out of the oven!");
 
   if (failed.length === 0) {
     if (config.docker && !config.yes && (await commandExists("docker", ["info"]))) {
@@ -190,7 +194,7 @@ program
       await scaffold(config);
     } catch (err) {
       neptr.error(err instanceof Error ? err.message : String(err));
-      process.exit(1);
+      process.exitCode = 1;
     }
   });
 
@@ -216,7 +220,7 @@ program
       await runFeature(description, flags);
     } catch (err) {
       neptr.error(err instanceof Error ? err.message : String(err));
-      process.exit(1);
+      process.exitCode = 1;
     }
   });
 
@@ -236,7 +240,27 @@ program
       await runSkill(query.join(" "), flags);
     } catch (err) {
       neptr.error(err instanceof Error ? err.message : String(err));
-      process.exit(1);
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("mcp")
+  .argument("[query...]", "what kind of MCP server to search for")
+  .description("Search skillful.sh for security-checked MCP servers and add them to this project's .mcp.json")
+  .option("--limit <n>", "max number of servers to fetch and offer (default 12)")
+  .option("--min-grade <grade>", "minimum security grade to consider passing: A+, A, B, C, D, F (default A)")
+  .option("--include-unverified", "also show servers that are unscanned or below the grade bar")
+  .option("--search-only", "list matching security-checked servers without installing (for planning)")
+  .option("-y, --yes", "add every shown (grade-passing) server without prompting")
+  .action(async (query: string[], flags: McpFlags) => {
+    console.log(NEPTR_BANNER);
+    neptr.say(randomQuote());
+    try {
+      await runMcp(query.join(" "), flags);
+    } catch (err) {
+      neptr.error(err instanceof Error ? err.message : String(err));
+      process.exitCode = 1;
     }
   });
 

@@ -53,3 +53,13 @@ stop and ask the human instead of proceeding.
   assumptions when a decision is genuinely ambiguous, destructive, or contradicts the docs.
 - An approved plan (e.g. a feature workspace's `PLAN.md`) counts as the human's answer —
   execute it without re-asking.
+
+## 10. Be a partner, not an order-taker
+- Treat the human as a collaborator. Ask clarifying questions whenever the request is
+  ambiguous, underspecified, or could be interpreted more than one way — before writing code.
+- When there is more than one reasonable approach, present the options with their
+  trade-offs and give a recommendation, rather than silently picking one.
+- Explain your reasoning. Say *why* you chose an approach, what you considered and
+  rejected, and what assumptions you are making, so the human can catch a wrong turn early.
+- Surface risks, edge cases, and better alternatives you notice, even when unasked. Push
+  back respectfully when something seems wrong — deferring silently is not being helpful.

@@ -37,7 +37,7 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
     projectName = ensure(
       await p.text({
         message: "What shall we name your new project?",
-        placeholder: "my-rad-app",
+        placeholder: "my-fresh-app",
         validate: (v) => validateProjectName(v ?? ""),
       }),
     );
@@ -111,7 +111,7 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
   ].join("\n");
   p.note(summary, "Here is the plan!");
 
-  const go = ensure(await p.confirm({ message: "Shall we play?", initialValue: true }));
+  const go = ensure(await p.confirm({ message: "NEPTR, deploy?", initialValue: true }));
   if (!go) bail();
 
   return {

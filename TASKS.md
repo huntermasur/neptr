@@ -76,6 +76,16 @@ Full plan context lives in the project README and CLAUDE.md.
       so generated `docs/COMMANDS.md` links resolve
 - [x] Verified: scaffold + `neptr feature` end to end in a scratchpad project
 
+## M10 — `neptr mcp` (security-checked MCP servers from skillful.sh)
+- [x] `src/mcp-registry.ts` — skillful.sh REST client: `/api/v1/items?type=mcp_server`
+      search + `/api/v1/items/:slug` security-score lookup, grade→verdict mapping,
+      npm→`npx -y` / PyPI→`uvx` launch-config derivation (browser-like UA to clear the WAF)
+- [x] `src/mcp.ts` — `neptr mcp` flow mirroring `neptr skill`: search, `--min-grade`
+      filter (default A), multiselect, merge into project `.mcp.json` (preserving
+      existing entries); `--search-only` + `--yes` planning modes
+- [x] `neptr mcp` registered in `src/cli.ts`; `test/mcp-registry.test.ts` added
+- [x] Verified: live search-only + `--yes` install writes a valid `.mcp.json` in a scratchpad
+
 ## Backlog (future ideas)
 - [ ] `neptr add <feature>` — retrofit docs/docker/mcp/skills onto an existing project
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines

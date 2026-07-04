@@ -3,7 +3,7 @@ import { renderString } from "../src/template.js";
 
 describe("renderString", () => {
   it("replaces known placeholders", () => {
-    expect(renderString("Hello {{name}}!", { name: "BMO" })).toBe("Hello BMO!");
+    expect(renderString("Hello {{name}}!", { name: "NEPTR" })).toBe("Hello NEPTR!");
   });
 
   it("leaves unknown placeholders intact so they're easy to spot", () => {

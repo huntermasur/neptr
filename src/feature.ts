@@ -116,11 +116,11 @@ export async function runFeature(description: string | undefined, flags: Feature
   });
 
   p.log.success(`Feature workspace created at ${featurePath}/`);
-  p.outro("NEPTR made a new game cartridge!");
+  p.outro("NEPTR baked a fresh feature pie!");
 
   // Plain console.log for the prompts themselves: clack's gutter characters
   // would be captured when the user copies the line.
-  console.log(pc.bold("Next: run each phase with an agent — copy, paste, play.\n"));
+  console.log(pc.bold("Next: run each phase with an agent — copy, paste, deploy.\n"));
   console.log(pc.green(pc.bold("1. Plan")) + pc.dim("  — use your smartest model"));
   console.log(
     `Read ${featurePath}/phases/plan.md and follow it exactly: research this codebase and fill in ${featurePath}/PLAN.md and ${featurePath}/TASKS.md for the feature described there. Do not write code.\n`,
@@ -133,5 +133,5 @@ export async function runFeature(description: string | undefined, flags: Feature
   console.log(
     `Read ${featurePath}/phases/review.md and follow it exactly: verify the implementation in this repo against ${featurePath}/PLAN.md, fix what's broken, and set the status to done.\n`,
   );
-  neptr.say("Paste each prompt into a fresh agent session, and wait for the pause between phases!");
+  neptr.say("Paste each prompt into a fresh agent session — one phase at a time, like layers in a pie!");
 }
