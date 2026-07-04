@@ -23,6 +23,17 @@ _Not planned yet — the plan phase fills in everything below._
 | File | Change |
 | --- | --- |
 
+## Recommended skills
+
+<!-- Planning agent: reusable skills.sh skills that fit the approach, found with
+     `neptr skill "<keywords>" --search-only`. List only audit-passing skills.
+     The implementer runs each command below in the implement phase; neptr skill
+     re-checks the security audit and skips anything that fails. Write
+     "None needed." if nothing fits. -->
+
+| Skill | Why | Install command |
+| --- | --- | --- |
+
 ## Risks & open questions
 
 <!-- Anything to confirm with the user before or during implementation. -->

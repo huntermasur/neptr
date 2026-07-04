@@ -227,6 +227,8 @@ program
   .option("--min-installs <n>", "minimum install count to consider a skill (default 1000)")
   .option("--limit <n>", "max number of skills to fetch and offer (default 20)")
   .option("--include-unverified", "also show skills with audit warnings or no audits yet")
+  .option("--search-only", "list matching security-checked skills without installing (for planning)")
+  .option("-y, --yes", "install every shown (audit-passing) skill without prompting")
   .action(async (query: string[], flags: SkillFlags) => {
     console.log(NEPTR_BANNER);
     neptr.say(randomQuote());

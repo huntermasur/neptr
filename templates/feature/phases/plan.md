@@ -16,9 +16,17 @@ without guessing.
    touch, Risks & open questions, Out of scope. Be specific — name files,
    functions, and patterns. If something important is ambiguous, ask the user
    before finalizing the plan.
-5. Rewrite [../TASKS.md](../TASKS.md) as an ordered checklist. Each task must be
+5. Once the approach is settled, look for reusable skills. For each capability the
+   feature needs (a framework, a tricky integration, a well-known pattern), run
+   `neptr skill "<keywords>" --search-only` from the project root. This searches
+   [skills.sh](https://skills.sh) and lists only skills whose security audits pass —
+   it installs nothing. Record the ones worth using in the **Recommended skills**
+   section of [../PLAN.md](../PLAN.md), each with the exact `neptr skill "…" --yes`
+   command the implementer should run. If nothing fits, write "None needed."
+6. Rewrite [../TASKS.md](../TASKS.md) as an ordered checklist. Each task must be
    small, concrete, and independently verifiable, with enough detail that the
-   implementer never has to re-derive the approach.
+   implementer never has to re-derive the approach. Include an early task to
+   install the recommended skills (if any).
 
 ## Rules
 

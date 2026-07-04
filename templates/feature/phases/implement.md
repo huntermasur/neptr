@@ -8,7 +8,14 @@ The plan phase already made the decisions — your job is to execute it faithful
 1. Check [../STATUS.md](../STATUS.md): the status must be `planned`. If it isn't,
    stop and tell the user which phase should run instead.
 2. Read [../PLAN.md](../PLAN.md) and [../TASKS.md](../TASKS.md) in full.
-3. Set the status line to `Status: implementing` and append a log row.
+3. Install the skills the plan recommends. For each command in the **Recommended
+   skills** section of [../PLAN.md](../PLAN.md), run it from the project root (they
+   look like `neptr skill "…" --yes`). `neptr skill` re-runs the security audit and
+   installs only skills that pass, so anything that fails is skipped automatically.
+   Note which skills installed in [../NOTES.md](../NOTES.md), then re-read your
+   `.agents/skills/` so the new guidance is in context. Skip this step if the plan
+   says "None needed."
+4. Set the status line to `Status: implementing` and append a log row.
 
 ## While implementing
 

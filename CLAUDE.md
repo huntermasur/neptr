@@ -21,7 +21,9 @@ skills.sh skills, codegraph indexing, and Docker.
 - `src/prompts.ts` — shared clack helpers (`bail`, `ensure` cancel handling)
 - `src/feature.ts` — `neptr feature`: scaffolds a plan → implement → review workspace
   at `.agents/features/<slug>/` in the current project (from `templates/feature/`)
-  and prints per-phase copy-paste agent prompts; never calls an LLM itself
+  and prints per-phase copy-paste agent prompts; never calls an LLM itself. The plan
+  phase discovers reusable skills with `neptr skill --search-only`; the implement
+  phase installs them with `neptr skill --yes` (both defined in `src/skill.ts`).
 - `src/config.ts` — `NEPTRConfig` type, flag merging, `--yes` defaults
 - `src/template.ts` — copies `templates/` trees, replacing `{{var}}` placeholders
 - `src/run.ts` — execa wrapper with themed spinners

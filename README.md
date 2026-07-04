@@ -45,6 +45,11 @@ whose security audits **all pass**, and lets you pick any number to install into
 `.agents/skills/` without leaving your editor. Pass `--include-unverified` to also
 see skills with audit warnings or no audits yet (their status is shown inline).
 
+Two non-interactive modes drive the feature workflow: `--search-only` lists the
+audit-passing matches and installs nothing (used by the plan phase to discover
+skills), and `--yes` installs every shown skill without prompting (used by the
+implement phase to add the skills the plan recommended).
+
 ## Feature workflow
 
 Inside a project, `neptr feature` breaks a feature into three agent-driven phases
