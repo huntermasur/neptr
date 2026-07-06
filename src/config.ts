@@ -128,10 +128,15 @@ export function validateProjectName(name: string): string | undefined {
   return undefined;
 }
 
+/** Split a comma-separated flag into trimmed items; "" and "none" mean empty. */
+function splitFlag(raw: string): string[] {
+  if (raw.trim() === "" || raw === "none") return [];
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
 function parseList<T extends string>(raw: string | undefined, allowed: readonly T[], label: string): T[] | undefined {
   if (raw === undefined) return undefined;
-  if (raw.trim() === "" || raw === "none") return [];
-  const items = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  const items = splitFlag(raw);
   for (const item of items) {
     if (!(allowed as readonly string[]).includes(item)) {
       throw new Error(`Unknown ${label} "${item}". Valid options: ${allowed.join(", ")}`);
@@ -159,9 +164,7 @@ export function configFromFlags(name: string | undefined, flags: NewFlags): Part
   }
   partial.mcpServers = parseList(flags.mcp, MCP_SERVERS, "MCP server");
   if (flags.skills !== undefined) {
-    const skills = flags.skills === "none" || flags.skills.trim() === ""
-      ? []
-      : flags.skills.split(",").map((s) => s.trim()).filter(Boolean);
+    const skills = splitFlag(flags.skills);
     // These go onto an `npx skills add` command line (through a shell on Windows),
     // so reject anything that isn't a plain owner/repo[@skill] source.
     for (const skill of skills) {

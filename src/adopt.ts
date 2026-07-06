@@ -259,6 +259,7 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
   }
 
   // --- Part B: agent migration workspace ------------------------------------
+  const prompts = adoptPhasePrompts(featurePath);
   let planCreated = false;
   if (flags.plan !== false) {
     if (fs.existsSync(featureDir)) {
@@ -269,9 +270,8 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
         renderFile(".docs/feature/README.md", featuresReadme, {});
       }
       renderDir("adopt", featureDir, {
-        ...phasePromptVars(adoptPhasePrompts(featurePath)),
+        ...phasePromptVars(prompts),
         projectName: config.projectName,
-        stack: vars.stack ?? config.template,
         date: new Date().toISOString().slice(0, 10),
         featurePath,
         inventory: buildInventory(root),
@@ -299,7 +299,7 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
   p.outro("NEPTR has moved in! The boilerplate is baked; now let an agent do the moving.");
 
   if (planCreated) {
-    printPhasePrompts(adoptPhasePrompts(featurePath), featurePath);
+    printPhasePrompts(prompts, featurePath);
   } else {
     console.log(
       pc.dim("Scaffolding retrofitted. Run `neptr adopt` without --no-plan to also generate the migration workspace.\n"),

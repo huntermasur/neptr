@@ -76,9 +76,9 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
     ensure(
       await p.multiselect<string>({
         message: "Which MCP servers should the project be wired up with?",
-        // Default to just the "Select all" row checked, not every individual server —
+        // The default is every server; showing just the "Select all" row checked
         // keeps the list readable while still installing everything if left as-is.
-        initialValues: DEFAULTS.mcpServers.length === MCP_SERVERS.length ? [SELECT_ALL_MCP] : DEFAULTS.mcpServers,
+        initialValues: [SELECT_ALL_MCP],
         required: false,
         options: [
           { value: SELECT_ALL_MCP, label: "Select all" },
@@ -87,18 +87,18 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
       }),
     );
 
-  const mcpServers = partial.mcpServers ?? (mcpSelection.includes(SELECT_ALL_MCP)
-    ? [...MCP_SERVERS]
-    : (mcpSelection as McpServer[]));
+  // When partial.mcpServers was set, mcpSelection is exactly it and can never
+  // contain the sentinel, so this expands "Select all" only for wizard picks.
+  const mcpServers = mcpSelection.includes(SELECT_ALL_MCP) ? [...MCP_SERVERS] : (mcpSelection as McpServer[]);
 
   const skillsSelection =
     partial.skills ??
     ensure(
       await p.multiselect<string>({
         message: "Any skills from skills.sh? (installed via npx skills add)",
-        // Default to just the "Select all" row checked, not every individual skill —
-        // keeps the list readable while still installing everything if left as-is.
-        initialValues: DEFAULTS.skills.length === CURATED_SKILLS.length ? [SELECT_ALL_SKILLS] : DEFAULTS.skills,
+        // The default is every curated skill; showing just the "Select all" row
+        // checked keeps the list readable while still installing everything.
+        initialValues: [SELECT_ALL_SKILLS],
         required: false,
         options: [
           { value: SELECT_ALL_SKILLS, label: "Select all" },
@@ -107,9 +107,9 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
       }),
     );
 
-  const skills = partial.skills ?? (skillsSelection.includes(SELECT_ALL_SKILLS)
+  const skills = skillsSelection.includes(SELECT_ALL_SKILLS)
     ? CURATED_SKILLS.map((s) => s.installArg)
-    : skillsSelection);
+    : skillsSelection;
 
   const agents =
     partial.agents ??

@@ -26,7 +26,8 @@ export async function gitStep(config: NEPTRConfig): Promise<void> {
   const gitignorePath = path.join(config.targetDir, ".gitignore");
   const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, "utf8") : "";
   if (!existing.includes("# NEPTR additions")) {
-    fs.writeFileSync(gitignorePath, existing.trimEnd() + "\n" + EXTRA_IGNORES);
+    const base = existing.trimEnd();
+    fs.writeFileSync(gitignorePath, (base ? base + "\n\n" : "") + EXTRA_IGNORES.trimStart());
   }
 
   const opts = { cwd: config.targetDir, stdio: "pipe" as const, timeout: 60_000 };

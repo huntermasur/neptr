@@ -24,20 +24,6 @@ export function stackLabel(template: ViteTemplate): string {
 export function templateVars(config: NEPTRConfig): TemplateVars {
   const date = new Date().toISOString().slice(0, 10);
 
-  const toolingLines: string[] = [];
-  if (config.mcpServers.length) {
-    toolingLines.push(
-      `- **MCP servers** (configured in \`.mcp.json\` for Claude and \`.cursor/mcp.json\` for Cursor — ` +
-        `keep both in sync): ${config.mcpServers.join(", ")}.`,
-    );
-  }
-  if (config.skills.length) {
-    toolingLines.push(`- **Skills** installed from skills.sh: ${config.skills.join(", ")}.`);
-  }
-  if (!toolingLines.length) {
-    toolingLines.push("- No MCP servers or skills configured yet.");
-  }
-
   const folderRows: string[] = [];
   if (config.agents.includes("copilot")) folderRows.push("| `.github/` | GitHub Copilot instructions |");
   if (config.agents.includes("cursor")) folderRows.push("| `.cursor/` | Cursor rules |");
@@ -54,7 +40,6 @@ export function templateVars(config: NEPTRConfig): TemplateVars {
     stack: stackLabel(config.template),
     date,
     extraCommands: config.docker ? "docker compose up dev   # dev server in Docker\n" : "",
-    toolingNotes: toolingLines.join("\n"),
     extraFolderRows: folderRows.join("\n"),
     viteConfigRow: viteConfigFile
       ? `| [../${viteConfigFile}](../${viteConfigFile}) | Vite build/dev configuration |`

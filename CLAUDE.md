@@ -98,7 +98,9 @@ Docker.
   MCP registry mirrors), then runs its own transparent safety check per server
   (verified-vendor namespace, GitHub repo activity/issues, broad-access keyword
   scan, local/Docker runnability, version pinning) yielding a safe/caution/avoid
-  verdict. Merges selected safe servers into **both** `.mcp.json` (Claude) and
+  verdict. Merges selected servers (safe by default; caution/avoid only via an
+  explicit `--include-unverified` interactive opt-in — `--yes` stays restricted
+  to safe) into **both** `.mcp.json` (Claude) and
   `.cursor/mcp.json` (Cursor) — the paths in `MCP_CONFIG_FILES` (config.ts), kept
   in sync so either editor sees the same servers — **version-pinned**
   (npm → `npx -y <pkg>@<ver>`, PyPI → `uvx <pkg>@<ver>`, OCI → `docker run`).
@@ -106,7 +108,8 @@ Docker.
   `GITHUB_TOKEN` to raise the GitHub API rate limit, degrading to "unknown" on failure.
 - `src/config.ts` — `NEPTRConfig` type, flag merging, `--yes` defaults
 - `src/template.ts` — copies `templates/` trees, replacing `{{var}}` placeholders
-- `src/run.ts` — execa wrapper with themed spinners
+- `src/run.ts` — execa wrapper (shell on Windows for .cmd shims; args must be
+  pre-validated shell-safe — it does no quoting)
 - `src/steps/*.ts` — one module per scaffold step, each exporting `run(config)`
   (`steps/agents.ts` generates root agent instruction files — CLAUDE.md, AGENTS.md
   (always), copilot/cursor/gemini — that force-read `.agents/` (including

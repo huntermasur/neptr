@@ -170,6 +170,7 @@ const SERVER_FRAMEWORKS: Array<[dep: string, label: string]> = [
 ];
 
 interface DbRule {
+  kind: "db" | "cache";
   deps: string[];
   label: string;
   composeService?: string;
@@ -181,6 +182,7 @@ interface DbRule {
 
 const DB_RULES: DbRule[] = [
   {
+    kind: "db",
     deps: ["pg", "postgres", "pg-promise"],
     label: "PostgreSQL",
     composeService: "postgres",
@@ -189,6 +191,7 @@ const DB_RULES: DbRule[] = [
     envVars: ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "DATABASE_URL"],
   },
   {
+    kind: "db",
     deps: ["mysql2", "mysql"],
     label: "MySQL",
     composeService: "mysql",
@@ -197,6 +200,7 @@ const DB_RULES: DbRule[] = [
     envVars: ["MYSQL_ROOT_PASSWORD", "MYSQL_DATABASE"],
   },
   {
+    kind: "db",
     deps: ["mongodb", "mongoose"],
     label: "MongoDB",
     composeService: "mongo",
@@ -205,6 +209,7 @@ const DB_RULES: DbRule[] = [
     envVars: ["MONGO_URL"],
   },
   {
+    kind: "db",
     deps: ["better-sqlite3", "sqlite3"],
     label: "SQLite",
     note: "file-based — mount a volume for the db file; no compose service needed",
@@ -213,6 +218,7 @@ const DB_RULES: DbRule[] = [
 
 const CACHE_RULES: DbRule[] = [
   {
+    kind: "cache",
     deps: ["redis", "ioredis", "@redis/client"],
     label: "Redis",
     composeService: "redis",
@@ -259,7 +265,7 @@ export function detectDocker(root: string, pkg: Record<string, unknown>): Docker
 
   const addDbRule = (rule: DbRule, dep: string): void => {
     services.push({
-      kind: rule === CACHE_RULES[0] ? "cache" : "db",
+      kind: rule.kind,
       label: rule.label,
       dep,
       composeService: rule.composeService,

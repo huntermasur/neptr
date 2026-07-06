@@ -3,16 +3,14 @@ import { execa, type Options } from "execa";
 /**
  * Run an external command. On Windows, npm/npx/git-adjacent tools ship as .cmd
  * shims which Node can only spawn through a shell, so we always go through one
- * there. Arguments are validated upstream (no spaces/shell metacharacters).
+ * there. With shell:true execa joins args with spaces and does not quote them,
+ * so every arg MUST already be shell-safe: callers validate anything dynamic
+ * against a strict allowlist (see `isSafeInstallArg`, `validateProjectName`)
+ * before it reaches here — run() itself does no quoting.
  */
 export async function run(command: string, args: string[], options: Options = {}) {
-  // With shell:true execa joins args with spaces and does not quote them,
-  // so quote anything containing whitespace ourselves.
   const useShell = process.platform === "win32";
-  const shellArgs = useShell
-    ? args.map((a) => (/\s/.test(a) ? `"${a.replaceAll('"', '\\"')}"` : a))
-    : args;
-  return execa(command, shellArgs, {
+  return execa(command, args, {
     windowsHide: true,
     ...options,
     ...(useShell ? { shell: true } : {}),
