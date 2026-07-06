@@ -2,7 +2,8 @@ import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { suggestSection, inferTemplate, buildInventory } from "../src/adopt.js";
+import { inferTemplate } from "../src/adopt.js";
+import { suggestSection, buildInventory } from "../src/adopt-scan.js";
 
 describe("suggestSection", () => {
   it("routes framework entry files to app/", () => {

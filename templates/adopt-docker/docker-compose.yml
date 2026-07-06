@@ -1,0 +1,12 @@
+name: {{projectName}}
+
+services:
+  app:
+    build: .
+    ports:
+      - "{{port}}:{{port}}"
+    env_file:
+      - .env
+{{dependsOnBlock}}
+{{serviceBlocks}}
+{{volumesBlock}}

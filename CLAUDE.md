@@ -29,20 +29,40 @@ Docker.
   `neptr skill --yes` / `neptr mcp --yes`. This discovery/install behavior lives in
   the phase templates (`templates/feature/phases/*.md`), not in `feature.ts`.
 - `src/adopt.ts` — `neptr adopt`: turns an **existing** project into a NEPTR
- project. Two halves, mirroring the split between what's safe to automate and what
+ project, planning a full refactor across four workstreams: code, tests, docs,
+ Docker. Two halves, mirroring the split between what's safe to automate and what
  isn't. **Part A (deterministic, additive, non-destructive):** infers a
  `NEPTRConfig` from the project (name from package.json, stack from deps via
  `inferTemplate`) and retrofits the `.agents/` hub, `.docs/` tree, root agent
  instruction files, the empty role-based `src/` sections + `tests/`, and (unless
  `--no-index`) the code index + hooks — reusing `renderDir`/`writeAgentInstructions`/
  `installIndexing` with `{ overwrite: false }` so it never clobbers existing files.
- **Part B (agent-driven):** scaffolds a migration workspace at
- `.docs/feature/<slug>/` (default slug `adopt-neptr-layout`) from `templates/adopt/`,
- pre-filling NOTES.md with `buildInventory()` — a scan of `src/` where
- `suggestSection()` heuristically proposes a target section per file — then prints
- the plan → implement → review copy-paste prompts. Like `feature.ts`, it never calls
- an LLM; the risky file moves + import rewrites are the agent's job. Flags:
- `--name`, `--agents`, `--no-index`, `--no-plan`, `--yes`.
+ Unless `--no-docker`, it also writes **DRAFT-headed** Docker files via
+ `adopt-docker.ts` when none exist (see below). **Part B (agent-driven):** scaffolds
+ a migration workspace at `.docs/feature/<slug>/` (default slug `adopt-neptr-layout`)
+ from `templates/adopt/`, pre-filling NOTES.md with inventories from `adopt-scan.ts`
+ (code via `buildInventory`/`suggestSection`, docs, tests, detected services,
+ env/config, monorepo note) — then prints the plan → implement → review copy-paste
+ prompts, whose phase templates work the workstreams in order code → tests → docs →
+ docker. Like `feature.ts`, it never calls an LLM; the risky moves, link fixes, and
+ Docker verification are the agent's job. Flags: `--name`, `--agents`, `--no-index`,
+ `--no-plan`, `--no-docs`, `--no-tests`, `--no-docker`, `--yes`.
+- `src/adopt-scan.ts` — pure, read-only detection/inventory functions for adopt:
+ `suggestSection`/`buildInventory` (code), `suggestDocTarget`/`buildDocsInventory`
+ (docs/, doc/, wiki/, root *.md minus README/LICENSE/agent files),
+ `suggestTestTarget`/`buildTestsInventory` (test dirs + `.test./.spec.` files, runner
+ config detection), `detectDocker` (server/db/cache deps, Prisma/Drizzle dialect
+ parsing, port from .env/scripts, existing Docker files), `buildDockerInventory`,
+ `buildEnvInventory` (variable **names** only from `.env.example` — never values),
+ `detectWorkspaces` (monorepo warning).
+- `src/adopt-docker.ts` — draft Docker generation for adopt (the deterministic half
+ of the hybrid Docker workstream): `writeDockerDrafts` picks a shape from the scan
+ (server/db → generic Node `templates/adopt-docker/` Dockerfile + compose; plain
+ Vite → the `templates/docker/` nginx setup; existing Docker files → nothing) and
+ prepends a DRAFT header the agent removes after verifying. Compose service/
+ depends_on/volumes blocks are string-built in code (`buildComposeBlocks`) because
+ `template.ts` does flat `{{var}}` replacement with no conditionals; db env uses
+ `${VAR:-default}` compose interpolation, never literals.
 - `src/skill.ts` / `src/skills-registry.ts` — `neptr skill`: searches skills.sh,
   filters to popular skills whose security audits all pass, and installs the
   selected ones into `.agents/skills/` via `npx skills add`.

@@ -134,6 +134,25 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] `test/adopt.test.ts` — suggestSection / inferTemplate / buildInventory
 - [x] Verified: `neptr adopt --yes` retrofits + plans in a scratchpad; re-run leaves 22 files untouched
 
+## M15 — `neptr adopt` full-project refactor (code + tests + docs + Docker)
+- [x] `src/adopt-scan.ts` — moved `suggestSection`/`buildInventory` out of adopt.ts; added
+      `buildDocsInventory`/`suggestDocTarget`, `buildTestsInventory`/`suggestTestTarget`,
+      `detectDocker` (server/db/cache deps, Prisma/Drizzle dialects, port resolution,
+      existing-Docker detection), `buildDockerInventory`, `buildEnvInventory` (names only),
+      `detectWorkspaces`
+- [x] `src/adopt-docker.ts` + `templates/adopt-docker/` — DRAFT-headed Dockerfile/compose
+      drafts; compose service blocks string-built in code; Vite SPA reuses `templates/docker/`
+- [x] `src/adopt.ts` — up-front scans in the confirm summary, Part A.5 draft step
+      (failure-tolerant), new NOTES.md inventory vars, broadened prompts;
+      `src/cli.ts` — `--no-docs`/`--no-tests`/`--no-docker`
+- [x] `templates/adopt/` — PLAN (3 mapping tables + Docker plan), NOTES (5 inventory
+      sections + monorepo note), TASKS, and all three phases reworked around the
+      code → tests → docs → docker workstreams
+- [x] `test/adopt-scan.test.ts`, `test/adopt-docker.test.ts`; `test/adopt.test.ts` imports fixed
+- [x] Verified: fixture adopts in a scratchpad (express+pg+redis, Vite SPA, docs/tests
+      project, existing-Dockerfile project) + skip-flag run; `docker compose config`
+      parses the drafted compose clean; no secrets leak, 0 unresolved `{{}}`
+
 ## Backlog (future ideas)
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines
 - [ ] Live docker compose build verification once Docker Desktop is installed

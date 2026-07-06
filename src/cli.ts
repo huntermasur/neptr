@@ -218,11 +218,14 @@ program
 
 program
   .command("adopt")
-  .description("Retrofit NEPTR's scaffolding into the current project and generate an agent plan to restructure src/ into NEPTR's layout")
+  .description("Retrofit NEPTR's scaffolding into the current project and generate an agent plan to restructure code, tests, docs, and Docker into NEPTR's layout")
   .option("-n, --name <name>", "slug for the migration workspace (default adopt-neptr-layout)")
   .option("--agents <list>", "comma-separated AI agents: claude,copilot,cursor,gemini,codex,opencode (or 'none'); AGENTS.md always included")
   .option("--no-index", "skip building the code index and installing its hooks")
   .option("--no-plan", "only retrofit the scaffolding; do not generate the migration workspace")
+  .option("--no-docs", "skip the documentation inventory + migration workstream")
+  .option("--no-tests", "skip the test inventory + migration workstream")
+  .option("--no-docker", "skip server/db detection, draft Docker files, and the Docker workstream")
   .option("-y, --yes", "accept all defaults, no prompts")
   .action(async (flags: AdoptFlags) => {
     console.log(NEPTR_BANNER);

@@ -16,6 +16,16 @@ import {
   type ViteTemplate,
 } from "./config.js";
 import { slugify } from "./feature.js";
+import {
+  buildDockerInventory,
+  buildDocsInventory,
+  buildEnvInventory,
+  buildInventory,
+  buildTestsInventory,
+  detectDocker,
+  detectWorkspaces,
+} from "./adopt-scan.js";
+import { writeDockerDrafts, type DockerDraftResult } from "./adopt-docker.js";
 
 export interface AdoptFlags {
   /** Slug for the migration workspace folder (default: adopt-neptr-layout). */
@@ -26,12 +36,15 @@ export interface AdoptFlags {
   index?: boolean;
   /** `--no-plan` sets this false: skip the agent migration workspace. */
   plan?: boolean;
+  /** `--no-docs` sets this false: skip the documentation inventory + workstream. */
+  docs?: boolean;
+  /** `--no-tests` sets this false: skip the test inventory + workstream. */
+  tests?: boolean;
+  /** `--no-docker` sets this false: skip server/db detection, drafts, and the workstream. */
+  docker?: boolean;
   /** No prompts — retrofit and scaffold with defaults. */
   yes?: boolean;
 }
-
-const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".vue", ".svelte"]);
-const SKIP_DIRS = new Set(["node_modules", "dist", "build", "coverage", ".git"]);
 
 /** Read the project's package.json, tolerating its absence. */
 function readPackageJson(root: string): Record<string, unknown> {
@@ -87,91 +100,22 @@ export function inferConfig(root: string, agents: string[]): NEPTRConfig {
   };
 }
 
-/**
- * Heuristic: guess which canonical section an existing file belongs in, purely from
- * its path/name. Deliberately conservative — the planning agent must confirm each.
- * Returns the section and the keyword that triggered the guess.
- */
-export function suggestSection(relPath: string): { section: string; why: string } {
-  const lower = relPath.toLowerCase();
-  const base = path.basename(lower).replace(/\.[^.]+$/, "");
-
-  // Framework entry files live in app/ regardless of other keywords.
-  if (["main", "index", "app", "bootstrap", "root", "server"].includes(base)) {
-    return { section: "app", why: `entry file "${base}"` };
-  }
-
-  // Known third-party vendors → integrations, matched as substrings so glued
-  // names like `stripeClient.ts` or `openaiApi.ts` are still caught.
-  const vendor = /(stripe|discord|openai|anthropic|github|gitlab|twilio|sendgrid|aws|s3|firebase|supabase|auth0|slack|shopify)/.exec(lower);
-  if (vendor) return { section: "integrations", why: `vendor "${vendor[1]}"` };
-
-  const rules: Array<[string, RegExp]> = [
-    ["config", /\b(config|settings?|env|feature[-_]?flags?)\b/],
-    ["data", /\b(models?|schemas?|entit(y|ies)|repositor(y|ies)|repo|migrations?|db|database|stores?|dao)\b/],
-    ["integrations", /\b(integrations?|clients?|sdk|providers?)\b/],
-    ["services", /\b(services?|controllers?|use[-_]?cases?|business|domain|handlers?)\b/],
-    ["shared", /\b(utils?|helpers?|libs?|types?|constants?|consts?|hooks?|shared|common)\b/],
-    ["app", /\b(routes?|router|pages?|layouts?|shell|views?|screens?)\b/],
-    ["modules", /\b(components?|features?|modules?|widgets?)\b/],
-  ];
-  for (const [section, re] of rules) {
-    const m = re.exec(lower);
-    if (m) return { section, why: `matched "${m[1] ?? m[0]}"` };
-  }
-  return { section: "modules", why: "unclassified — confirm" };
+/** Placeholder rendered under a NOTES.md heading when a workstream is skipped. */
+function skipNote(flag: string): string {
+  return `_Workstream skipped via ${flag} — re-run \`neptr adopt\` without the flag to inventory it._`;
 }
 
-/** Walk src/ and build the markdown inventory table with suggested target sections. */
-export function buildInventory(root: string): string {
-  const srcDir = path.join(root, "src");
-  if (!fs.existsSync(srcDir)) {
-    return "_No `src/` directory found — there is nothing to restructure. If this project keeps its code elsewhere, tell the planning agent where._";
-  }
-
-  const files: string[] = [];
-  const walk = (dir: string): void => {
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        if (SKIP_DIRS.has(entry.name)) continue;
-        walk(path.join(dir, entry.name));
-      } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name))) {
-        files.push(path.join(dir, entry.name));
-      }
-    }
-  };
-  walk(srcDir);
-  files.sort();
-
-  if (files.length === 0) {
-    return "_No source files found under `src/` yet._";
-  }
-
-  const rows = files.map((abs) => {
-    const rel = path.relative(root, abs).split(path.sep).join("/");
-    const { section, why } = suggestSection(rel);
-    return `| \`${rel}\` | \`src/${section}/\` | ${why} |`;
-  });
-
-  return [
-    `Found ${files.length} source file(s) under \`src/\`.`,
-    "",
-    "| Current path | Suggested section | Why (heuristic) |",
-    "| --- | --- | --- |",
-    ...rows,
-  ].join("\n");
+/** Pull the "Found N …" count out of an inventory for the confirm summary. */
+function inventoryCount(inventory: string): string {
+  return /^Found (\d+)/.exec(inventory)?.[1] ?? "0";
 }
 
 /**
  * `neptr adopt` — retrofit NEPTR's additive scaffolding into the current project,
  * then scaffold an agent-driven migration workspace that plans and executes the
- * risky part (moving src/ into the role-based layout). NEPTR never calls an LLM.
+ * risky part: moving code, tests and docs into the role-based layout and standing
+ * up a verified Docker setup. NEPTR never calls an LLM; the only files it writes
+ * beyond the additive scaffolding are DRAFT Docker files the agent must finish.
  */
 export async function runAdopt(flags: AdoptFlags): Promise<void> {
   const root = process.cwd();
@@ -210,12 +154,39 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
   const featurePath = `.docs/feature/${slug}`;
   const featureDir = path.join(root, ".docs", "feature", slug);
 
+  // Up-front scans (all read-only) so the confirm summary can show what each
+  // workstream found; the results feed NOTES.md and the Docker drafts.
+  const monorepo = detectWorkspaces(root, pkg);
+  if (monorepo) {
+    neptr.warn(`Workspace/monorepo markers found (${monorepo}) — NEPTR's layout applies per package; adopt scans the repo root only.`);
+  }
+  const docsInventory = flags.docs === false ? skipNote("--no-docs") : buildDocsInventory(root);
+  const testsInventory = flags.tests === false ? skipNote("--no-tests") : buildTestsInventory(root, pkg);
+  const dockerScan = flags.docker === false ? undefined : detectDocker(root, pkg);
+
+  let dockerSummary = "skipped (--no-docker)";
+  if (dockerScan) {
+    const detected = dockerScan.services.map((s) => s.label).join(" + ");
+    if (dockerScan.existingFiles.length) {
+      dockerSummary = `existing ${dockerScan.existingFiles.join(", ")} found — inventory only, no drafts`;
+    } else if (dockerScan.hasServer || dockerScan.hasDb) {
+      dockerSummary = `detected ${detected} → draft Dockerfile + docker-compose.yml`;
+    } else if (dockerScan.hasVite) {
+      dockerSummary = "Vite app, no server/db → draft nginx-based Docker setup";
+    } else {
+      dockerSummary = "no server, database, or Vite app detected — nothing to draft";
+    }
+  }
+
   if (!flags.yes) {
     const summary = [
       `${pc.dim("project")}   ${config.projectName}`,
       `${pc.dim("stack")}     ${config.template} (inferred)`,
       `${pc.dim("agents")}    ${agents.length ? agents.join(", ") : "none"}`,
       `${pc.dim("retrofit")}  .agents/, .docs/, agent files, src/ sections${flags.index === false ? "" : ", code index"} (additive — never overwrites)`,
+      `${pc.dim("docs")}      ${flags.docs === false ? "skipped (--no-docs)" : `${inventoryCount(docsInventory)} file(s) to relocate (inventory only)`}`,
+      `${pc.dim("tests")}     ${flags.tests === false ? "skipped (--no-tests)" : `${inventoryCount(testsInventory)} file(s) (inventory only)`}`,
+      `${pc.dim("docker")}    ${dockerSummary}`,
       `${pc.dim("plan")}      ${flags.plan === false ? "skipped" : `${featurePath}/ (agent migration workspace)`}`,
     ].join("\n");
     p.note(summary, "Here is how NEPTR will adopt this project");
@@ -264,6 +235,28 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
     }
   }
 
+  // --- Part A.5: draft Docker files (deterministic, DRAFT-headed) -----------
+  let drafts: DockerDraftResult = { written: [], skipped: [] };
+  let noDraftReason: string | undefined;
+  if (dockerScan) {
+    if (dockerScan.existingFiles.length) {
+      noDraftReason = "Docker files already exist at the root — the Docker workstream gap-checks them instead.";
+    } else if (!dockerScan.hasServer && !dockerScan.hasDb && !dockerScan.hasVite) {
+      noDraftReason = "no server, database, or Vite app was detected.";
+    } else {
+      spin.start("Drafting Docker setup from detected dependencies");
+      try {
+        drafts = writeDockerDrafts(root, config.projectName, pkg, dockerScan);
+        created.push(...drafts.written);
+        spin.stop(`${pc.green("✔")} Drafted ${drafts.written.join(", ") || "nothing new"} (DRAFT — the agent verifies)`);
+      } catch (err) {
+        noDraftReason = `drafting failed: ${err instanceof Error ? err.message : String(err)}`;
+        spin.stop(`${pc.yellow("▲")} Docker draft step skipped`);
+        neptr.warn(`Could not draft Docker files: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+  }
+
   // --- Part B: agent migration workspace ------------------------------------
   let planCreated = false;
   if (flags.plan !== false) {
@@ -280,6 +273,15 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
         date: new Date().toISOString().slice(0, 10),
         featurePath,
         inventory: buildInventory(root),
+        docsInventory,
+        testsInventory,
+        dockerInventory: dockerScan
+          ? buildDockerInventory(dockerScan, drafts.written, noDraftReason)
+          : skipNote("--no-docker"),
+        envInventory: buildEnvInventory(root),
+        monorepoNote: monorepo
+          ? `> **Monorepo detected** (${monorepo}) — NEPTR's layout applies per package; these inventories scan the repo root only. Plan accordingly.`
+          : "",
       });
       planCreated = true;
     }
@@ -303,11 +305,11 @@ export async function runAdopt(flags: AdoptFlags): Promise<void> {
     );
     console.log(pc.green(pc.bold("2. Implement")) + pc.dim("  — a cheaper model is fine"));
     console.log(
-      `Read ${featurePath}/phases/implement.md and follow it exactly: move the files per ${featurePath}/PLAN.md, fixing imports and keeping the build green after each batch.\n`,
+      `Read ${featurePath}/phases/implement.md and follow it exactly: move the code, tests, and docs per ${featurePath}/PLAN.md and finish the Docker setup, keeping the build green after each batch.\n`,
     );
     console.log(pc.green(pc.bold("3. Review")) + pc.dim("  — back to the smart model"));
     console.log(
-      `Read ${featurePath}/phases/review.md and follow it exactly: verify the code only moved (no behaviour change), fix any breakage, and set the status to done.\n`,
+      `Read ${featurePath}/phases/review.md and follow it exactly: verify the code only moved (no behaviour change), every doc and test is accounted for, the Docker setup works, then fix any breakage and set the status to done.\n`,
     );
   } else {
     console.log(

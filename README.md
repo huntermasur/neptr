@@ -110,26 +110,34 @@ that fails when the map is stale.
 ## Adopting an existing project
 
 `neptr new` is for greenfield projects; `neptr adopt` retrofits everything onto a
-project you already have. Run it from the project root. It works in two halves,
-split along the line between what's safe to automate and what isn't:
+project you already have and plans a **full** refactor into NEPTR's structure —
+code, tests, docs, and Docker. Run it from the project root. It works in two
+halves, split along the line between what's safe to automate and what isn't:
 
 - **Retrofit (automatic, additive, non-destructive):** it infers the project name
   and stack, then adds the `.agents/` hub, the `.docs/` tree, the root agent
   instruction files, the empty role-based `src/` sections (`app/`, `modules/`,
   `services/`, `data/`, `integrations/`, `shared/`, `config/`) + `tests/`, and the
-  code index with its hooks. Any file that already exists is **left untouched** —
-  nothing is overwritten.
-- **Restructure (agent-driven plan):** moving your existing `src/` files into the
-  new layout and fixing every import is risky and codebase-specific, so NEPTR
+  code index with its hooks. It also detects servers, databases, and caches from
+  your dependencies (Express/Fastify/Nest/…, Postgres/MySQL/Mongo/Redis, Prisma/
+  Drizzle dialects) and — if you have no Docker files yet — writes best-effort
+  **DRAFT** `Dockerfile` + `docker-compose.yml` files wired up with the detected
+  backing services (a plain Vite app gets the same nginx setup `neptr new` ships).
+  Any file that already exists is **left untouched** — nothing is overwritten.
+- **Restructure (agent-driven plan):** moving files, fixing imports and links,
+  and making containers actually run is risky and codebase-specific, so NEPTR
   doesn't do it blindly. Instead it scaffolds a migration workspace at
-  `.docs/feature/adopt-neptr-layout/`, pre-fills its notes with a scan of your
-  current `src/` (each file tagged with a *suggested* target section), and prints
-  three copy-paste prompts — plan → implement → review — for an agent to execute
-  and for you to review. As with `neptr feature`, NEPTR never calls an LLM itself.
+  `.docs/feature/adopt-neptr-layout/`, pre-fills its notes with inventories of
+  your current code, docs, tests, detected services, and env/config files (each
+  entry tagged with a *suggested* target), and prints three copy-paste prompts —
+  plan → implement → review — for an agent to execute across four ordered
+  workstreams (code → tests → docs → docker) and for you to review. As with
+  `neptr feature`, NEPTR never calls an LLM itself.
 
 Flags: `--name <slug>` (rename the migration workspace), `--agents <list>` (which
 agent instruction files to write), `--no-index` (skip the code index/hooks),
-`--no-plan` (retrofit the scaffolding only), and `-y, --yes` (no prompts).
+`--no-plan` (retrofit the scaffolding only), `--no-docs` / `--no-tests` /
+`--no-docker` (skip those workstreams), and `-y, --yes` (no prompts).
 
 ## Feature workflow
 

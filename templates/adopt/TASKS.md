@@ -1,8 +1,10 @@
 # Tasks — adopt NEPTR layout for {{projectName}}
 
-Written during the plan phase; the implementer checks each item off only after the
-move lands and the project still typechecks/builds. Keep tasks ordered, small, and
-independently verifiable — ideally one section (or one cohesive batch of files) per
-task so a broken import is easy to trace.
+Written during the plan phase; the implementer checks each item off only after it
+lands and its workstream's verification passes. Group tasks by workstream in this
+order — **code, tests, docs, docker** — and keep them ordered, small, and
+independently verifiable: code/test batches end in "typecheck + build (+ test
+suite) still pass", doc batches end in a link check, docker tasks end in
+`docker compose config` parsing clean.
 
-- [ ] _No tasks yet — the plan phase fills this in, one move-batch at a time._
+- [ ] _No tasks yet — the plan phase fills this in, one batch at a time._
