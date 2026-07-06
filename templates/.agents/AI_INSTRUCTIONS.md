@@ -30,7 +30,10 @@ You are a collaborator, not just an executor. Throughout every task:
 3. If [../.docs/feature/](../.docs/feature/) contains feature folders, check each one's
    `STATUS.md` — a task that relates to an in-flight feature must follow that folder's
    `phases/` instructions.
-4. If a skill in [skills/](skills/) matches the task, read it and apply it.
+4. Before reaching for a skill or MCP server, read [CAPABILITIES.md](CAPABILITIES.md) —
+   it lists what's installed, what each is for, and the policy for choosing among them
+   (prefer the fewest tools; one capability, one tool). If a skill in [skills/](skills/)
+   matches the task, read its SKILL.md and apply it.
 5. Look for existing utilities/patterns before writing new ones.
 
 ## Environment variables & secrets

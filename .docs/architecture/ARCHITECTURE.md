@@ -39,3 +39,4 @@ that file authoritative; document each new variable there and in `.env.example`.
 Significant choices are recorded as ADRs in [adr/](adr/). Current decisions:
 
 - [0001 — Record architecture decisions](adr/0001-record-architecture-decisions.md)
+- [0002 — Capabilities manifest for skills & MCP servers](adr/0002-capabilities-manifest.md)

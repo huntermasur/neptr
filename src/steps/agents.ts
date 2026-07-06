@@ -30,7 +30,9 @@ any assumptions you might have.
 
 The rest of \`.agents/\` and \`.docs/\` is read on demand, only what the current task touches:
 
-- [.agents/skills/](${at(".agents/skills/")}) — installed skills; skim and use the ones relevant to the task
+- [.agents/CAPABILITIES.md](${at(".agents/CAPABILITIES.md")}) — installed skills & MCP servers and the
+  policy for choosing among them; read this **before using any skill or MCP server**
+- [.agents/skills/](${at(".agents/skills/")}) — the skills themselves; read a skill's SKILL.md before applying it
 - [.docs/feature/](${at(".docs/feature/")}) — in-flight feature workspaces; if your task relates to a
   feature that has a folder here, read its STATUS.md and PLAN.md first
 - [.docs/](${at(".docs/")}) — architecture, ADRs, module map, and guides; read only the parts your change affects

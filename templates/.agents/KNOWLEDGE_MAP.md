@@ -10,6 +10,7 @@ Everyone: update it whenever project structure changes.** Last updated: {{date}}
 | --- | --- |
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) | Entry point for AI agents: workflow, before/during/after a task |
 | [CONSTITUTION.md](CONSTITUTION.md) | Non-negotiable principles for agents |
+| [CAPABILITIES.md](CAPABILITIES.md) | Installed skills & MCP servers + the policy for choosing among them |
 | [../.docs/environment.md](../.docs/environment.md) | Prerequisites, commands, and env vars to run this project |
 | [../.docs/module-map.md](../.docs/module-map.md) | Where each type of component lives inside `src/` |
 | [../.docs/REPO_MAP.md](../.docs/REPO_MAP.md) | Auto-generated index of every `src/` file and its exports (`neptr index`) |

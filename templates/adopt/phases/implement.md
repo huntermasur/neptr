@@ -93,7 +93,8 @@ at `implementing`, and stop — tell the user to run the Milestone N+1 prompt fr
 on an unscoped run or the **final** milestone.
 
 1. Delete any now-empty old folders and run `neptr index` to refresh
-   `.docs/REPO_MAP.md` and the `.agents/KNOWLEDGE_MAP.md` tables.
+   `.docs/REPO_MAP.md`, the `.agents/KNOWLEDGE_MAP.md` tables, and the
+   `.agents/CAPABILITIES.md` skills/MCP inventory.
 2. Update [../../../module-map.md](../../../module-map.md) so its rows match the folders
    that now actually hold code.
 3. Run typecheck, build, and tests one final time and fix what they surface.

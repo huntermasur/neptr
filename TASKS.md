@@ -174,6 +174,21 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] Verified: `neptr feature` + `neptr adopt` in scratchpad projects write PROMPTS.md
       matching the console output; `--no-plan` writes none
 
+## M17 — `.agents/CAPABILITIES.md` (skills & MCP manifest + usage policy)
+- [x] `templates/.agents/CAPABILITIES.md` — hand-written usage policy (list-to-use,
+      prefer fewest tools, one capability/one tool, human-curated precedence) + generated
+      `neptr:skills`/`neptr:mcp` inventory markers
+- [x] `src/indexer.ts` — `refreshCapabilities`: scans `.agents/skills/*/SKILL.md`
+      frontmatter + parses `.mcp.json` into byte-stable tables; wired into `installIndexing`
+      and `runIndex`; `.agents/CAPABILITIES.md` added to `KNOWN_KEY_FILES`
+- [x] `templates/.githooks/pre-commit` stages `.agents/CAPABILITIES.md`
+- [x] Required-reading wiring: `steps/agents.ts` agentBody, `templates/.agents/AI_INSTRUCTIONS.md`
+      step 4, `templates/.agents/KNOWLEDGE_MAP.md` doc-index row, skills README; feature/adopt
+      implement phases point overlaps at the precedence list
+- [x] Docs: ADR 0002, ARCHITECTURE.md decisions list, CLAUDE.md, README.md
+- [ ] Verified: scaffold a demo, install a skill + MCP server, confirm the tables refresh
+      deterministically in a scratchpad project
+
 ## Backlog (future ideas)
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines
 - [ ] Live docker compose build verification once Docker Desktop is installed

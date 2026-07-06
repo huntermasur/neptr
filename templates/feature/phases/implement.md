@@ -20,9 +20,11 @@ The plan phase already made the decisions — your job is to execute it faithful
    look like `neptr skill "…" --yes`). `neptr skill` re-runs the security audit and
    installs only skills that pass, so anything that fails is skipped automatically.
    Note which skills installed in [../NOTES.md](../NOTES.md), then re-read your
-   `.agents/skills/` so the new guidance is in context. Skip this step if the plan
-   says "None needed" — or if an earlier milestone already installed them (check
-   [../NOTES.md](../NOTES.md) and skip what's installed).
+   `.agents/skills/` so the new guidance is in context. The installed-skills
+   inventory in `.agents/CAPABILITIES.md` refreshes on the next `neptr index`; if a
+   new skill overlaps one already listed there, record which one wins in that file's
+   precedence list. Skip this step if the plan says "None needed" — or if an earlier
+   milestone already installed them (check [../NOTES.md](../NOTES.md) and skip what's installed).
 5. Install the MCP servers the plan recommends. For each command in the
    **Recommended MCP servers** section of [../PLAN.md](../PLAN.md), run it from the
    project root (they look like `neptr mcp "…" --yes`). `neptr mcp` re-runs the
@@ -31,8 +33,10 @@ The plan phase already made the decisions — your job is to execute it faithful
    is skipped automatically. Any server that declares credentials/environment
    variables needs them filled in by hand — note those and which servers installed
    in [../NOTES.md](../NOTES.md), then restart your agent so it picks up the new MCP
-   config. Skip this step if the plan says "None needed" — or if an earlier
-   milestone already installed them (check NOTES.md).
+   config. The MCP inventory in `.agents/CAPABILITIES.md` refreshes on the next
+   `neptr index`; if a new server overlaps one already listed there, record which one
+   wins in that file's precedence list. Skip this step if the plan says "None
+   needed" — or if an earlier milestone already installed them (check NOTES.md).
 6. Set the status line to `Status: implementing` (if it isn't already) and
    append a log row — for a milestone run, note it, e.g.
    `| <date> | implementing | Milestone 2 started |`.

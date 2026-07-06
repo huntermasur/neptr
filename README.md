@@ -11,8 +11,9 @@ coding agents.
 
 - **Vite app** — any official framework/variant via `npm create vite`
 - **`.agents/` hub** — the **AI constitution** (`CONSTITUTION.md`), **workflow
-  instructions** (`AI_INSTRUCTIONS.md`), and a single **knowledge map**
-  (`KNOWLEDGE_MAP.md`) — plus a `skills/`
+  instructions** (`AI_INSTRUCTIONS.md`), a single **knowledge map**
+  (`KNOWLEDGE_MAP.md`), and a **capabilities manifest** (`CAPABILITIES.md`) that lists
+  installed skills & MCP servers plus the policy for choosing among them — plus a `skills/`
   folder for installed skills.sh skills — with rules that keep the map in sync with the code
 - **`.docs/` tree** — `environment.md` (how to run the project), `module-map.md` (where
   each component type lives), an `architecture/` folder (architecture doc, specs, ADRs), a
@@ -91,8 +92,9 @@ embeddings.
 `neptr index` builds exactly that. It scans `src/` (regex extraction of exported
 symbols + each file's top-of-file comment — no LLM, fully deterministic) and writes
 `.docs/REPO_MAP.md`: every source file, its exports, and a one-line purpose. It also
-refreshes the Folder map / Key files tables inside `.agents/KNOWLEDGE_MAP.md` between
-marker comments, leaving your hand-written prose untouched.
+refreshes the Folder map / Key files tables inside `.agents/KNOWLEDGE_MAP.md` and the
+Skills / MCP servers inventory tables inside `.agents/CAPABILITIES.md` between marker
+comments, leaving your hand-written prose (including the capability usage policy) untouched.
 
 You don't run it by hand. New projects get two triggers wired up automatically:
 

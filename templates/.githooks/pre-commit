@@ -6,6 +6,6 @@
 # still proceeds. Nothing here should ever stop you from committing.
 if command -v neptr >/dev/null 2>&1; then
   neptr index --quiet || true
-  git add .docs/REPO_MAP.md .agents/KNOWLEDGE_MAP.md 2>/dev/null || true
+  git add .docs/REPO_MAP.md .agents/KNOWLEDGE_MAP.md .agents/CAPABILITIES.md 2>/dev/null || true
 fi
 exit 0

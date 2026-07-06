@@ -2,7 +2,8 @@
 
 NEPTR is a NEPTR (Adventure Time)-themed CLI that scaffolds new Vite projects with an
 AI-ready setup: a `.agents/` hub (constitution, AI instructions, a single knowledge map,
-plus a `skills/` folder for installed skills), a `.docs/` tree
+a capabilities manifest for installed skills/MCP servers, plus a `skills/` folder for
+installed skills), a `.docs/` tree
 (`environment.md` for how to run the project, `module-map.md` for where component types
 live, an `architecture/` folder with ARCHITECTURE.md + ADRs, a `feature/` folder for
 `neptr feature` workspaces, and a `documents/` folder for user documents), a canonical
@@ -78,10 +79,14 @@ Docker.
   filters to popular skills whose security audits all pass, and installs the
   selected ones into `.agents/skills/` via `npx skills add`.
 - `src/indexer.ts` — `neptr index`: deterministically scans `src/` (regex export +
-  top-of-file comment extraction, no LLM) into `.docs/REPO_MAP.md`, and refreshes the
-  Folder map / Key files tables in `.agents/KNOWLEDGE_MAP.md` between
-  `<!-- neptr:foldermap:start/end -->` / `<!-- neptr:keyfiles:start/end -->` markers
-  (prose outside the markers is preserved). This is the "index" Claude Code consumes —
+ top-of-file comment extraction, no LLM) into `.docs/REPO_MAP.md`, and refreshes the
+ Folder map / Key files tables in `.agents/KNOWLEDGE_MAP.md` between
+ `<!-- neptr:foldermap:start/end -->` / `<!-- neptr:keyfiles:start/end -->` markers
+ (prose outside the markers is preserved). It also refreshes the **Skills** and **MCP
+ servers** inventory tables in `.agents/CAPABILITIES.md` between
+ `<!-- neptr:skills:start/end -->` / `<!-- neptr:mcp:start/end -->` markers (scanning
+ `.agents/skills/*/SKILL.md` frontmatter and parsing `.mcp.json`), leaving the
+ hand-written usage policy around them intact — see ADR 0002. This is the "index" Claude Code consumes —
   it has no vector index; it greps/reads, so a fresh deterministic map is the win.
   Output is byte-stable so the pre-commit hook never makes spurious diffs. Flags:
   `--quiet` (hooks), `--setup` (retrofit: install hooks in an existing project),
@@ -104,7 +109,8 @@ Docker.
 - `src/run.ts` — execa wrapper with themed spinners
 - `src/steps/*.ts` — one module per scaffold step, each exporting `run(config)`
   (`steps/agents.ts` generates root agent instruction files — CLAUDE.md, AGENTS.md
-  (always), copilot/cursor/gemini — that force-read `.agents/` and skim skills/docs;
+  (always), copilot/cursor/gemini — that force-read `.agents/` (including
+  `CAPABILITIES.md` before using any skill/MCP) and skim skills/docs;
   `steps/src-layout.ts` lays the canonical role-based sections under `src/` —
   `app/`, `modules/`, `services/`, `data/`, `integrations/`, `shared/`, `config/` (from
   `templates/src-layout/`) — plus a root `tests/` folder (from `templates/tests/`),
