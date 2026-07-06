@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { inferTemplate } from "../src/adopt.js";
+import { inferConfig, inferTemplate } from "../src/adopt.js";
 import { buildInventory, suggestSection } from "../src/adopt-scan.js";
 
 describe("suggestSection", () => {
@@ -64,6 +64,20 @@ describe("inferTemplate", () => {
   it("falls back to vanilla-ts when nothing matches", () => {
     fs.writeFileSync(path.join(dir, "tsconfig.json"), "{}");
     expect(inferTemplate(dir, {})).toBe("vanilla-ts");
+  });
+});
+
+describe("inferConfig", () => {
+  it("reads a package.json with a UTF-8 BOM (Windows editors) instead of ignoring it", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "neptr-adopt-bom-"));
+    try {
+      fs.writeFileSync(path.join(dir, "package.json"), `﻿{"name":"bom-app","dependencies":{"react":"^18"}}`);
+      const config = inferConfig(dir, []);
+      expect(config.projectName).toBe("bom-app");
+      expect(config.template).toBe("react");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 

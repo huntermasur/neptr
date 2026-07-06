@@ -46,7 +46,10 @@ function readPackageJson(root: string): Record<string, unknown> {
   const file = path.join(root, "package.json");
   if (!fs.existsSync(file)) return {};
   try {
-    return JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, unknown>;
+    // Strip a UTF-8 BOM (common from Windows editors) — JSON.parse rejects it,
+    // and a silent {} here would wipe out all dependency-based detection.
+    const text = fs.readFileSync(file, "utf8");
+    return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text) as Record<string, unknown>;
   } catch {
     return {};
   }

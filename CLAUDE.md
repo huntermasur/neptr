@@ -111,8 +111,8 @@ Docker.
   `GITHUB_TOKEN` to raise the GitHub API rate limit, degrading to "unknown" on failure.
 - `src/config.ts` — `NEPTRConfig` type, flag merging, `--yes` defaults
 - `src/template.ts` — copies `templates/` trees, replacing `{{var}}` placeholders
-- `src/run.ts` — execa wrapper (shell on Windows for .cmd shims; args must be
-  pre-validated shell-safe — it does no quoting)
+- `src/run.ts` — execa wrapper (shell on Windows for .cmd shims; whitespace-bearing
+  literal args get quoted, dynamic args must be allowlist-validated upstream)
 - `src/steps/*.ts` — one module per scaffold step, each exporting `run(config)`
   (`steps/agents.ts` generates root agent instruction files — CLAUDE.md, AGENTS.md
   (always), copilot/cursor/gemini — that force-read `.agents/` (including

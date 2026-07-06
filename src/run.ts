@@ -1,16 +1,25 @@
 import { execa, type Options } from "execa";
 
 /**
+ * Wrap whitespace-bearing args in double quotes for Windows shell:true, where
+ * execa joins args with spaces and does not quote them. Only fixed literals
+ * carry whitespace (e.g. the initial-commit message); anything dynamic is
+ * allowlist-validated upstream (see `isSafeInstallArg`, `validateProjectName`)
+ * and never contains whitespace, quotes, or shell metacharacters — args with
+ * embedded quotes are not supported (cmd.exe has no sane escape for them).
+ */
+export function shellQuote(args: string[]): string[] {
+  return args.map((a) => (/\s/.test(a) ? `"${a}"` : a));
+}
+
+/**
  * Run an external command. On Windows, npm/npx/git-adjacent tools ship as .cmd
  * shims which Node can only spawn through a shell, so we always go through one
- * there. With shell:true execa joins args with spaces and does not quote them,
- * so every arg MUST already be shell-safe: callers validate anything dynamic
- * against a strict allowlist (see `isSafeInstallArg`, `validateProjectName`)
- * before it reaches here — run() itself does no quoting.
+ * there (see `shellQuote` for the arg rules that makes this safe).
  */
 export async function run(command: string, args: string[], options: Options = {}) {
   const useShell = process.platform === "win32";
-  return execa(command, args, {
+  return execa(command, useShell ? shellQuote(args) : args, {
     windowsHide: true,
     ...options,
     ...(useShell ? { shell: true } : {}),

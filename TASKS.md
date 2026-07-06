@@ -189,6 +189,29 @@ Full plan context lives in the project README and CLAUDE.md.
 - [ ] Verified: scaffold a demo, install a skill + MCP server, confirm the tables refresh
       deterministically in a scratchpad project
 
+## M-prod — Production-readiness review pass (2026-07-06)
+- [x] Repo hygiene: removed committed `undefined/src/**` scaffold artifact and the
+      dogfooded root `tests/README.md`
+- [x] Bug fixes (each with a regression test): CRLF-tolerant indexer markers and
+      line-ending-normalized `--check`/rewrite comparisons; `--check` also validates the
+      KNOWLEDGE_MAP/CAPABILITIES marker tables; registry skill ids validated against an
+      `owner/repo[@slug]` allowlist before reaching the shell; adopt code inventory
+      excludes test files; `neptr.warn`/`error` go to stderr; short vendor tokens (aws, s3)
+      need word boundaries; package.json with a UTF-8 BOM no longer parses as empty
+- [x] Dead code removed (SRC_SECTIONS, toolingNotes, adopt stack var, unused imports);
+      run() quoting corrected (whitespace-bearing literals quoted, dynamic args
+      allowlist-validated) and its docs fixed
+- [x] Generated projects: `.gitattributes` pins the three generated docs to LF;
+      Dockerfile drafts keep `# syntax=` on line 1; `--search-only` prints exact
+      `owner/repo@slug` install commands and `neptr skill <exact-arg>` installs directly;
+      rate-limited audit fetches no longer masquerade as "unaudited"
+- [x] `.agents/` hub templates deduplicated — each rule lives in exactly one file
+- [x] Biome lint/format added (`npm run lint`, `lint:fix`, and `check` = typecheck +
+      lint + test); repo `.gitattributes` keeps `templates/**` LF
+- [x] Verified end-to-end in a scratchpad: scaffold (no `{{}}` leftovers, `index --check`
+      green incl. CRLF working copies, stale tables detected), adopt (test files excluded
+      from code inventory, Docker drafts correct, re-run non-destructive), live skill search
+
 ## Backlog (future ideas)
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines
 - [ ] Live docker compose build verification once Docker Desktop is installed
