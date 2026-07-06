@@ -23,7 +23,9 @@ export const VITE_TEMPLATES = [
 ] as const;
 export type ViteTemplate = (typeof VITE_TEMPLATES)[number];
 
-export const MCP_SERVERS = ["playwright", "context7", "github"] as const;
+// IDs are alphabetically ordered so both the wizard list and `--mcp` help text
+// read top-to-bottom without needing a separate sort.
+export const MCP_SERVERS = ["context7", "docker", "github", "memory", "playwright", "sequential-thinking"] as const;
 export type McpServer = (typeof MCP_SERVERS)[number];
 
 /**
@@ -66,11 +68,14 @@ export interface SkillChoice {
 }
 
 export const CURATED_SKILLS: SkillChoice[] = [
-  { installArg: "vercel-labs/skills@find-skills", name: "find-skills", hint: "lets your agent discover and install more skills" },
-  { installArg: "anthropics/skills", name: "anthropics/skills (all)", hint: "installs Anthropic's full official skill collection (frontend-design & ~15 more)" },
-  { installArg: "vercel-labs/agent-skills@vercel-react-best-practices", name: "vercel-react-best-practices", hint: "React/Next.js best practices" },
   { installArg: "vercel-labs/agent-browser@agent-browser", name: "agent-browser", hint: "browser automation for agents" },
+  { installArg: "anthropics/skills", name: "anthropics/skills (all)", hint: "installs Anthropic's full official skill collection (frontend-design & ~15 more)" },
+  { installArg: "vercel-labs/skills@find-skills", name: "find-skills", hint: "lets your agent discover and install more skills" },
   { installArg: "mattpocock/skills@grill-me", name: "grill-me", hint: "brutally honest code review" },
+  { installArg: "pbakaus/impeccable@impeccable", name: "impeccable", hint: "polish UI to a pixel-perfect, production-ready finish" },
+  { installArg: "mattpocock/skills@improve-codebase-architecture", name: "improve-codebase-architecture", hint: "reviews and improves codebase architecture" },
+  { installArg: "vercel-labs/agent-skills@vercel-react-best-practices", name: "vercel-react-best-practices", hint: "React/Next.js best practices" },
+  { installArg: "vercel-labs/agent-skills@web-design-guidelines", name: "web-design-guidelines", hint: "audits UI for accessibility, performance, and UX best practices" },
 ];
 
 export interface NEPTRConfig {
@@ -104,7 +109,8 @@ export interface NewFlags {
 
 export const DEFAULTS = {
   template: "react-ts" as ViteTemplate,
-  mcpServers: [] as McpServer[],
+  // Auto-select every MCP server by default; users can trim in the wizard.
+  mcpServers: [...MCP_SERVERS] as McpServer[],
   // Auto-select every curated skill by default; users can trim in the wizard.
   skills: CURATED_SKILLS.map((s) => s.installArg) as string[],
   agents: ["claude", "cursor"] as string[],

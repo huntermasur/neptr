@@ -20,7 +20,7 @@ coding agents.
 - **Repo index for Claude Code** — `neptr index` scans `src/` into `.docs/REPO_MAP.md`
   (a deterministic, greppable per-file map of exports) and keeps the `KNOWLEDGE_MAP.md`
   tables current; auto-refreshed via a Claude Code SessionStart hook and a git pre-commit hook
-- **MCP config** (`.mcp.json` for Claude + `.cursor/mcp.json` for Cursor, kept in sync) — playwright, context7, github (your pick)
+- **MCP config** (`.mcp.json` for Claude + `.cursor/mcp.json` for Cursor, kept in sync) — context7, docker, git/github, memory, playwright, sequential-thinking (your pick, all selected by default)
 - **Skills** — checklist of top [skills.sh](https://skills.sh) skills
 - **Docker** — multi-stage Dockerfile + compose for dev and prod
 - **Git** — init, .gitignore, initial commit, dependencies installed

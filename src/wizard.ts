@@ -16,11 +16,25 @@ import {
   type ViteTemplate,
 } from "./config.js";
 
-const MCP_HINTS: Record<McpServer, string> = {
-  playwright: "browser automation — let the agent drive your app",
-  context7: "up-to-date library docs for the agent",
-  github: "PRs, issues, and repo workflows",
+/** Display label for each MCP server; defaults to the id when not listed here. */
+const MCP_LABELS: Partial<Record<McpServer, string>> = {
+  github: "git/github",
+  "sequential-thinking": "sequential thinking",
 };
+
+const MCP_HINTS: Record<McpServer, string> = {
+  context7: "up-to-date library docs for the agent",
+  docker: "manage containers, images, and compose stacks",
+  github: "PRs, issues, and repo workflows",
+  memory: "persistent knowledge graph for the agent across sessions",
+  playwright: "browser automation — let the agent drive your app",
+  "sequential-thinking": "structured step-by-step reasoning for complex problems",
+};
+
+/** Sentinel value for the "select all" row atop the skills multiselect. */
+const SELECT_ALL_SKILLS = "__select_all__";
+/** Sentinel value for the "select all" row atop the MCP servers multiselect. */
+const SELECT_ALL_MCP = "__select_all_mcp__";
 
 /**
  * Interactive wizard. Anything already provided via flags (in `partial`) is
@@ -57,27 +71,45 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
       }),
     );
 
-  const mcpServers =
+  const mcpSelection =
     partial.mcpServers ??
     ensure(
-      await p.multiselect<McpServer>({
+      await p.multiselect<string>({
         message: "Which MCP servers should the project be wired up with?",
-        initialValues: DEFAULTS.mcpServers,
+        // Default to just the "Select all" row checked, not every individual server —
+        // keeps the list readable while still installing everything if left as-is.
+        initialValues: DEFAULTS.mcpServers.length === MCP_SERVERS.length ? [SELECT_ALL_MCP] : DEFAULTS.mcpServers,
         required: false,
-        options: MCP_SERVERS.map((s) => ({ value: s, label: s, hint: MCP_HINTS[s] })),
+        options: [
+          { value: SELECT_ALL_MCP, label: "Select all" },
+          ...MCP_SERVERS.map((s) => ({ value: s, label: MCP_LABELS[s] ?? s, hint: MCP_HINTS[s] })),
+        ],
       }),
     );
 
-  const skills =
+  const mcpServers = partial.mcpServers ?? (mcpSelection.includes(SELECT_ALL_MCP)
+    ? [...MCP_SERVERS]
+    : (mcpSelection as McpServer[]));
+
+  const skillsSelection =
     partial.skills ??
     ensure(
       await p.multiselect<string>({
         message: "Any skills from skills.sh? (installed via npx skills add)",
-        initialValues: DEFAULTS.skills,
+        // Default to just the "Select all" row checked, not every individual skill —
+        // keeps the list readable while still installing everything if left as-is.
+        initialValues: DEFAULTS.skills.length === CURATED_SKILLS.length ? [SELECT_ALL_SKILLS] : DEFAULTS.skills,
         required: false,
-        options: CURATED_SKILLS.map((s) => ({ value: s.installArg, label: s.name, hint: s.hint })),
+        options: [
+          { value: SELECT_ALL_SKILLS, label: "Select all" },
+          ...CURATED_SKILLS.map((s) => ({ value: s.installArg, label: s.name, hint: s.hint })),
+        ],
       }),
     );
+
+  const skills = partial.skills ?? (skillsSelection.includes(SELECT_ALL_SKILLS)
+    ? CURATED_SKILLS.map((s) => s.installArg)
+    : skillsSelection);
 
   const agents =
     partial.agents ??

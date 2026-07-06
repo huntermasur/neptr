@@ -186,7 +186,7 @@ program
   .argument("[name]", "project name")
   .description("Scaffold a new project")
   .option("-t, --template <template>", "Vite template (e.g. react-ts, vue-ts, svelte-ts)")
-  .option("--mcp <list>", "comma-separated MCP servers: playwright,context7,github (or 'none')")
+  .option("--mcp <list>", "comma-separated MCP servers: context7,docker,github,memory,playwright,sequential-thinking (or 'none')")
   .option("--skills <list>", "comma-separated skills.sh sources: owner/repo@skill, or owner/repo for a whole repo (or 'none')")
   .option("--agents <list>", "comma-separated AI agents: claude,copilot,cursor,gemini,codex,opencode (or 'none'); AGENTS.md always included")
   .option("--docker", "generate Docker setup")

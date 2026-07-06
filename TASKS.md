@@ -32,7 +32,10 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] Verified: generated .mcp.json is valid JSON with all selected servers
 
 ## M4 — Skills
-- [x] Curated bundled list of top skills.sh skills (find-skills, anthropics/skills, vercel react, agent-browser, grill-me)
+- [x] Curated bundled list of top skills.sh skills (agent-browser, anthropics/skills,
+      find-skills, grill-me, impeccable, improve-codebase-architecture,
+      vercel-react-best-practices, web-design-guidelines), sorted alphabetically with a
+      "Select all" row atop the wizard's multiselect
 - [x] `npx skills add <repo> --yes --skill * --agent <agents>` per selection, per-skill success/fail reporting
 - [x] Verified: mattpocock/skills installed into `.claude/skills/` in a scaffolded project
 - Note: live leaderboard fetch dropped — skills.sh has no public JSON API (client-rendered
