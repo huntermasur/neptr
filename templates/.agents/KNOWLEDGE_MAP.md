@@ -1,9 +1,8 @@
 # Knowledge Map — {{projectName}}
 
-The single starting point for understanding this codebase: where everything lives.
-**Agents: read this before your first change in a session. Everyone: update it —
-together with [INDEX.md](INDEX.md) — whenever project structure changes.**
-Last updated: {{date}}.
+The single starting point for understanding this codebase: where everything lives and
+which files matter most. **Agents: read this before your first change in a session.
+Everyone: update it whenever project structure changes.** Last updated: {{date}}.
 
 ## Documentation index
 
@@ -11,34 +10,47 @@ Last updated: {{date}}.
 | --- | --- |
 | [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md) | Entry point for AI agents: workflow, before/during/after a task |
 | [CONSTITUTION.md](CONSTITUTION.md) | Non-negotiable principles for agents |
-| [INDEX.md](INDEX.md) | Direct links to the important files in this repo |
-| [../docs/COMMANDS.md](../docs/COMMANDS.md) | Commands and scripts for building, running, testing |
-| [../docs/architecture/ARCHITECTURE.md](../docs/architecture/ARCHITECTURE.md) | Stack, module boundaries, data flow |
-| [../docs/architecture/adr/](../docs/architecture/adr/) | Architectural decision records + specs (why things are the way they are) |
-| [../docs/domain/DOMAIN_DOCUMENTATION.md](../docs/domain/DOMAIN_DOCUMENTATION.md) | Doc granularity levels + when to update what |
-| [../docs/domain/DOMAIN_INSTRUCTIONS.md](../docs/domain/DOMAIN_INSTRUCTIONS.md) | Domain glossary, rules, and invariants |
-| [../docs/files/](../docs/files/) | User-provided files and documents |
+| [../.docs/environment.md](../.docs/environment.md) | Prerequisites, commands, and env vars to run this project |
+| [../.docs/module-map.md](../.docs/module-map.md) | Where each type of component lives inside `src/` |
+| [../.docs/architecture/ARCHITECTURE.md](../.docs/architecture/ARCHITECTURE.md) | Stack, module boundaries, data flow |
+| [../.docs/architecture/adr/](../.docs/architecture/adr/) | Architectural decision records (why things are the way they are) |
+| [../.docs/documents/](../.docs/documents/) | User-provided files and documents |
+| [../.docs/feature/](../.docs/feature/) | In-flight feature workspaces (plan/tasks/status/notes per feature) |
 | [../README.md](../README.md) | Human-facing overview: what this project is, how to run it |
 
 ## Folder map
 
 | Path | Purpose |
 | --- | --- |
-| `src/` | Application source (Vite `{{template}}` layout) |
+| `src/` | Application source (Vite `{{template}}` layout) — see [../.docs/module-map.md](../.docs/module-map.md) |
 | `public/` | Static assets served as-is |
-| `.agents/` | Agent rules, knowledge map, index (you are here) |
+| `.agents/` | Agent rules and this knowledge map (you are here) |
 | `.agents/skills/` | Installed skills.sh skills |
-| `.agents/features/` | Feature workspaces: plan/tasks/status/notes per feature |
-| `docs/` | Project documentation: commands, architecture, domain, user files |
-| `docs/architecture/` | Architecture overview, specs, and ADRs |
-| `docs/architecture/adr/` | Numbered architectural decision records |
-| `docs/domain/` | Documentation guide and domain instructions |
-| `docs/files/` | Files and documents provided by the user |
+| `.docs/` | Project documentation: environment, module map, architecture, documents, features |
+| `.docs/architecture/` | Architecture overview and ADRs |
+| `.docs/architecture/adr/` | Numbered architectural decision records |
+| `.docs/documents/` | Files and documents provided by the user |
+| `.docs/feature/` | Feature workspaces: plan/tasks/status/notes per feature |
 {{extraFolderRows}}
 
 > Keep this table in sync with reality: every tracked project folder belongs here, and
-> every row must still exist. Generated and tool folders (`node_modules/`, `dist/`,
-> `.codegraph/`) don't count.
+> every row must still exist. Generated and tool folders (`node_modules/`, `dist/`) don't count.
+
+## Key files
+
+| File | Role |
+| --- | --- |
+| [../index.html](../index.html) | HTML entry — Vite serves and builds from here |
+| `src/` main module | Application bootstrap (see the Vite `{{template}}` layout) |
+| [../package.json](../package.json) | Dependencies and npm scripts |
+{{viteConfigRow}}
+| `.env` (gitignored) | Environment variables — document each in [../.docs/environment.md](../.docs/environment.md) |
+| [../.env.example](../.env.example) | Committed template for `.env`; keep every variable in sync here |
+{{extraIndexRows}}
+
+<!-- As the project grows, add the source files an agent will most often need: state
+stores, API clients, routers, shared utilities. Rule of thumb: if you had to hunt for a
+file more than once, it belongs here. -->
 
 ## Key concepts
 
@@ -56,10 +68,10 @@ flowchart TD
     Src --> Public["public/ — static assets"]
     subgraph Meta["Project meta"]
         AI[".agents/ — agent rules & knowledge map"]
-        Docs["docs/ — documentation"]
+        Docs[".docs/ — documentation"]
     end
 ```
 
 > Replace this diagram as real architecture emerges (components, state, services, APIs).
-> Details belong in [../docs/architecture/ARCHITECTURE.md](../docs/architecture/ARCHITECTURE.md); this is the
+> Details belong in [../.docs/architecture/ARCHITECTURE.md](../.docs/architecture/ARCHITECTURE.md); this is the
 > 10-second version.

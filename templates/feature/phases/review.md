@@ -14,7 +14,7 @@ Assume nothing the implementer wrote is true until you have verified it.
 
 - Verify the actual code against the plan and every TASKS.md item — read the
   changed files; do not trust the checkboxes.
-- Run the project's verification commands (`docs/COMMANDS.md` if present,
+- Run the project's verification commands (`.docs/environment.md` if present,
   otherwise `package.json` scripts): typecheck, build, tests.
 - Exercise the feature itself where possible, not just the checks.
 - Fix any bugs you find. Log each fix in [../NOTES.md](../NOTES.md) under a

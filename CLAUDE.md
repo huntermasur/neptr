@@ -1,11 +1,11 @@
 # NEPTR CLI — Agent Instructions
 
 NEPTR is a NEPTR (Adventure Time)-themed CLI that scaffolds new Vite projects with an
-AI-ready setup: a `.agents/` hub (constitution, AI instructions, knowledge map, file
-index, plus a `skills/` folder for installed skills), a docs tree
-(COMMANDS.md, an `architecture/` folder with ARCHITECTURE.md + ADRs, a `domain/` folder
-with DOMAIN_DOCUMENTATION.md + DOMAIN_INSTRUCTIONS.md, and a `files/` folder for user
-documents), MCP config,
+AI-ready setup: a `.agents/` hub (constitution, AI instructions, a single knowledge map,
+plus a `skills/` folder for installed skills), a `.docs/` tree
+(`environment.md` for how to run the project, `module-map.md` for where component types
+live, an `architecture/` folder with ARCHITECTURE.md + ADRs, a `feature/` folder for
+`neptr feature` workspaces, and a `documents/` folder for user documents), MCP config,
 skills.sh skills, and Docker.
 
 ## Commands
@@ -20,7 +20,7 @@ skills.sh skills, and Docker.
 - `src/wizard.ts` — @clack/prompts flow producing a `NEPTRConfig`
 - `src/prompts.ts` — shared clack helpers (`bail`, `ensure` cancel handling)
 - `src/feature.ts` — `neptr feature`: scaffolds a plan → implement → review workspace
-  at `.agents/features/<slug>/` in the current project (from `templates/feature/`)
+  at `.docs/feature/<slug>/` in the current project (from `templates/feature/`)
   and prints per-phase copy-paste agent prompts; never calls an LLM itself. The plan
   phase discovers reusable skills with `neptr skill --search-only`; the implement
   phase installs them with `neptr skill --yes` (both defined in `src/skill.ts`).

@@ -26,19 +26,19 @@ stop and ask the human instead of proceeding.
 
 ## 5. Consistency
 - Follow the existing patterns, naming, and style of this codebase over personal preference.
-- New code must match the architecture described in [../docs/architecture/ARCHITECTURE.md](../docs/architecture/ARCHITECTURE.md);
+- New code must match the architecture described in [../.docs/architecture/ARCHITECTURE.md](../.docs/architecture/ARCHITECTURE.md);
   if it can't, record why in an ADR before proceeding.
 - Major architectural decisions (new dependency, new pattern, new boundary, new
   top-level structure) must be captured in the architecture folder
-  ([../docs/architecture/](../docs/architecture/)): update `ARCHITECTURE.md` and add an
-  ADR in [../docs/architecture/adr/](../docs/architecture/adr/) in the same change.
+  ([../.docs/architecture/](../.docs/architecture/)): update `ARCHITECTURE.md` and add an
+  ADR in [../.docs/architecture/adr/](../.docs/architecture/adr/) in the same change.
 
 ## 6. Documentation is part of the work
-- A change without its documentation update (per [../docs/domain/DOMAIN_DOCUMENTATION.md](../docs/domain/DOMAIN_DOCUMENTATION.md))
-  is an incomplete change.
+- A change without its documentation update (per the "Before you finish" policy in
+  [AI_INSTRUCTIONS.md](AI_INSTRUCTIONS.md)) is an incomplete change.
 - In particular: any architectural or structural change (files/folders added, moved,
   or removed; new dependency; changed boundaries) must update
-  [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) and [INDEX.md](INDEX.md) in the same change.
+  [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md) in the same change.
 
 ## 7. Abstraction and simplicity
 - Prefer reusable components; minimize complexity. Aim for high cohesion and low coupling.

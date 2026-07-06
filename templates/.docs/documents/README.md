@@ -1,4 +1,4 @@
-# Files — {{projectName}}
+# Documents — {{projectName}}
 
 A place to keep files and documents the user hands to the project: specs, briefs,
 mockups, exported data, reference PDFs, screenshots, and anything else that informs the
@@ -11,8 +11,8 @@ work but isn't source code.
 - Prefer text/Markdown where possible so changes are diffable and searchable.
 - When a file drives a decision or a feature, link it from the relevant place:
   [../architecture/ARCHITECTURE.md](../architecture/ARCHITECTURE.md), an ADR in
-  [../architecture/adr/](../architecture/adr/), or
-  [../../.agents/INDEX.md](../../.agents/INDEX.md).
+  [../architecture/adr/](../architecture/adr/), or the knowledge map at
+  [../../.agents/KNOWLEDGE_MAP.md](../../.agents/KNOWLEDGE_MAP.md).
 
 ## For agents
 

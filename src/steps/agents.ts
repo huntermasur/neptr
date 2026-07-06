@@ -16,25 +16,24 @@ anything else, read the agent hub. This is mandatory.
 
 ## Required reading — always, no exceptions
 
-Read these five files before starting any task, however small:
+Read these four files before starting any task, however small:
 
 - [.agents/CONSTITUTION.md](${at(".agents/CONSTITUTION.md")}) — non-negotiable principles
 - [.agents/AI_INSTRUCTIONS.md](${at(".agents/AI_INSTRUCTIONS.md")}) — the workflow you must follow
-- [.agents/KNOWLEDGE_MAP.md](${at(".agents/KNOWLEDGE_MAP.md")}) — where everything lives
-- [.agents/INDEX.md](${at(".agents/INDEX.md")}) — direct links to important files
-- [docs/COMMANDS.md](${at("docs/COMMANDS.md")}) — how to run, build, and verify
+- [.agents/KNOWLEDGE_MAP.md](${at(".agents/KNOWLEDGE_MAP.md")}) — where everything lives and the key files
+- [.docs/environment.md](${at(".docs/environment.md")}) — how to run, build, and verify
 
 Do not skip this step or assume you already know the contents. These files override
 any assumptions you might have.
 
 ## Read as needed — skim by context
 
-The rest of \`.agents/\` and \`docs/\` is read on demand, only what the current task touches:
+The rest of \`.agents/\` and \`.docs/\` is read on demand, only what the current task touches:
 
 - [.agents/skills/](${at(".agents/skills/")}) — installed skills; skim and use the ones relevant to the task
-- [.agents/features/](${at(".agents/features/")}) — in-flight feature workspaces; if your task relates to a
+- [.docs/feature/](${at(".docs/feature/")}) — in-flight feature workspaces; if your task relates to a
   feature that has a folder here, read its STATUS.md and PLAN.md first
-- [docs/](${at("docs/")}) — architecture, ADRs, and guides; read only the parts your change affects
+- [.docs/](${at(".docs/")}) — architecture, ADRs, module map, and guides; read only the parts your change affects
 
 ## Then follow the workflow
 

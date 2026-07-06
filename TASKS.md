@@ -86,6 +86,16 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] `neptr mcp` registered in `src/cli.ts`; `test/mcp-registry.test.ts` added
 - [x] Verified: live search-only + `--yes` install writes a valid `.mcp.json` in a scratchpad
 
+## M11 — `.docs/` rework (hidden docs tree + single knowledge map)
+- [x] Renamed scaffolded `docs/` → `.docs/`; reshaped to `architecture/`, `feature/`,
+      `documents/`, plus new `module-map.md` (src/ component-type map) and `environment.md`
+      (run-on-a-new-machine + commands, absorbing `COMMANDS.md` and the env section)
+- [x] Dropped `docs/domain/`; folded the doc-update policy table into `AI_INSTRUCTIONS.md`
+- [x] Removed `.agents/INDEX.md`; folded its key-files section into `KNOWLEDGE_MAP.md`
+      (now the single guide) and repointed every reference (agents.ts, constitution, README)
+- [x] `neptr feature` now writes to `.docs/feature/<slug>/` (`src/feature.ts`, `src/cli.ts`)
+- [ ] Verified: scaffold a demo + `neptr feature` end to end in a scratchpad project
+
 ## Backlog (future ideas)
 - [ ] `neptr add <feature>` — retrofit docs/docker/mcp/skills onto an existing project
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines

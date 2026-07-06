@@ -9,18 +9,19 @@
 ## Structure
 
 The project follows the standard Vite layout: application code in `src/`, static assets
-in `public/`, entry point wired through `index.html`. See the folder map in
-[../../.agents/KNOWLEDGE_MAP.md](../../.agents/KNOWLEDGE_MAP.md) and the file links in
-[../../.agents/INDEX.md](../../.agents/INDEX.md).
+in `public/`, entry point wired through `index.html`. See the folder map and key files in
+[../../.agents/KNOWLEDGE_MAP.md](../../.agents/KNOWLEDGE_MAP.md), and where each type of
+component lives inside `src/` in [../module-map.md](../module-map.md).
 
 ### Module boundaries
 
 <!-- Describe how src/ is organized as it grows: features vs shared code, where state
 lives, how modules may depend on each other. Update this section BEFORE introducing a
-new top-level folder in src/. -->
+new top-level folder in src/, and keep it in sync with the component map. -->
 
 _Not yet defined — the project is freshly scaffolded. When `src/` gains its first real
-structure, document the boundaries here and record the decision as an ADR._
+structure, document the boundaries here (and in [../module-map.md](../module-map.md)) and
+record the decision as an ADR._
 
 ## Data flow
 
@@ -30,9 +31,9 @@ _Not yet defined._
 
 ## Environment & configuration
 
-- Environment variables go in `.env` (gitignored); document each variable here and
-  provide a safe default in `.env.example`.
-- Vite exposes only variables prefixed with `VITE_` to client code.
+How to run this project — prerequisites, install/build/run commands, and the full
+environment-variable reference — lives in [../environment.md](../environment.md). Keep
+that file authoritative; document each new variable there and in `.env.example`.
 
 ## Decisions
 

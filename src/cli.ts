@@ -43,7 +43,7 @@ const STEPS: Step[] = [
     name: "Generate AI & docs layer",
     enabled: () => true,
     run: aiDocsStep,
-    fix: () => "copy templates/.agents and templates/docs from the neptr repo into the project",
+    fix: () => "copy templates/.agents and templates/.docs from the neptr repo into the project",
   },
   {
     name: "Generate agent instruction files",
@@ -203,7 +203,7 @@ program
 program
   .command("feature")
   .argument("[description]", "what the feature should do")
-  .description("Create a plan → implement → review workspace in .agents/features/")
+  .description("Create a plan → implement → review workspace in .docs/feature/")
   .option("-n, --name <name>", "short feature name (becomes the folder slug)")
   .option("-y, --yes", "no prompts (requires --name)")
   .action(async (description: string | undefined, flags: FeatureFlags) => {

@@ -1,7 +1,7 @@
 # Feature workspaces
 
-Each subfolder here is one feature moving through **plan → implement → review**,
-created by `neptr feature`.
+Each subfolder in `.docs/feature/` is one feature moving through
+**plan → implement → review**, created by `neptr feature`.
 
 | File | Purpose |
 | --- | --- |

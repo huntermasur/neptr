@@ -30,23 +30,23 @@ export function validateFeatureName(name: string): string | undefined {
 
 /**
  * `neptr feature` — scaffold a plan → implement → review workspace at
- * .agents/features/<slug>/ in the current project, then print the copy-paste
+ * .docs/feature/<slug>/ in the current project, then print the copy-paste
  * prompts that hand each phase to an agent. NEPTR never calls an LLM itself.
  */
 export async function runFeature(description: string | undefined, flags: FeatureFlags): Promise<void> {
   const projectDir = process.cwd();
   const agentsDir = path.join(projectDir, ".agents");
-  const featuresDir = path.join(agentsDir, "features");
+  const featuresDir = path.join(projectDir, ".docs", "feature");
 
   p.intro(pc.bgGreen(pc.black(" neptr feature ")));
 
   // This command runs inside an existing project; .agents/ is the marker that
-  // it was scaffolded by NEPTR. Offer to bootstrap just the features folder
+  // it was scaffolded by NEPTR. Offer to bootstrap just the feature folder
   // elsewhere (--yes accepts the default and bootstraps silently).
   if (!fs.existsSync(agentsDir) && !flags.yes) {
     const go = ensure(
       await p.confirm({
-        message: "No .agents/ hub here — this doesn't look like a NEPTR project. Create just .agents/features/ and continue?",
+        message: "No .agents/ hub here — this doesn't look like a NEPTR project. Create just .docs/feature/ and continue?",
         initialValue: true,
       }),
     );
@@ -85,7 +85,7 @@ export async function runFeature(description: string | undefined, flags: Feature
   }
 
   const featureDir = path.join(featuresDir, slug);
-  const featurePath = `.agents/features/${slug}`;
+  const featurePath = `.docs/feature/${slug}`;
   if (fs.existsSync(featureDir)) {
     p.log.error(`${featurePath} already exists. NEPTR does not overwrite friends — pick another name.`);
     process.exit(1);
@@ -102,11 +102,11 @@ export async function runFeature(description: string | undefined, flags: Feature
     if (!go) bail();
   }
 
-  // The shared features README is var-free, so it renders fine even in
+  // The shared feature README is var-free, so it renders fine even in
   // projects NEPTR never scaffolded.
   const featuresReadme = path.join(featuresDir, "README.md");
   if (!fs.existsSync(featuresReadme)) {
-    renderFile(".agents/features/README.md", featuresReadme, {});
+    renderFile(".docs/feature/README.md", featuresReadme, {});
   }
   renderDir("feature", featureDir, {
     featureName,

@@ -11,11 +11,12 @@ coding agents.
 
 - **Vite app** — any official framework/variant via `npm create vite`
 - **`.agents/` hub** — the **AI constitution** (`CONSTITUTION.md`), **workflow
-  instructions** (`AI_INSTRUCTIONS.md`), **knowledge map** (`KNOWLEDGE_MAP.md`), and
-  **file index** (`INDEX.md`) — plus a `skills/`
-  folder for installed skills.sh skills — with rules that keep the map and index in sync with the code
-- **Docs tree** — `COMMANDS.md`, an `architecture/` folder (architecture doc, specs, ADRs),
-  a `domain/` folder (documentation guide + domain instructions), and a `files/` folder for user documents
+  instructions** (`AI_INSTRUCTIONS.md`), and a single **knowledge map**
+  (`KNOWLEDGE_MAP.md`) — plus a `skills/`
+  folder for installed skills.sh skills — with rules that keep the map in sync with the code
+- **`.docs/` tree** — `environment.md` (how to run the project), `module-map.md` (where
+  each component type lives), an `architecture/` folder (architecture doc, specs, ADRs), a
+  `feature/` folder for `neptr feature` workspaces, and a `documents/` folder for user documents
 - **MCP config** (`.mcp.json`) — playwright, context7, github (your pick)
 - **Skills** — checklist of top [skills.sh](https://skills.sh) skills
 - **Docker** — multi-stage Dockerfile + compose for dev and prod
@@ -69,7 +70,7 @@ can't be auto-wired — NEPTR lists their repos so you can configure them by han
 Inside a project, `neptr feature` breaks a feature into three agent-driven phases
 so you can use a smart (expensive) model to plan and review while a cheaper model
 does the coding. It asks for a name and description, scaffolds
-`.agents/features/<slug>/` (plan, task list, status, notes, and per-phase agent
+`.docs/feature/<slug>/` (plan, task list, status, notes, and per-phase agent
 instructions), and prints three copy-paste prompts — one per phase. Run each
 prompt in a fresh agent session; every phase ends by updating the workspace's
 `STATUS.md` and pausing so you stay in control between phases.

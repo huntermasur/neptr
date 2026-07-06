@@ -76,12 +76,12 @@ export function templateVars(config: NEPTRConfig): TemplateVars {
   };
 }
 
-/** Generate .agents/, docs/, and the project README. */
+/** Generate .agents/, .docs/, and the project README. */
 export async function aiDocsStep(config: NEPTRConfig): Promise<void> {
   const vars = templateVars(config);
   const dest = config.targetDir;
 
   renderDir(".agents", path.join(dest, ".agents"), vars);
-  renderDir("docs", path.join(dest, "docs"), vars);
+  renderDir(".docs", path.join(dest, ".docs"), vars);
   renderFile("project/README.md", path.join(dest, "README.md"), vars);
 }

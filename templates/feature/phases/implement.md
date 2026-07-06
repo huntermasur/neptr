@@ -33,7 +33,7 @@ The plan phase already made the decisions — your job is to execute it faithful
 
 ## When done
 
-1. Run the project's checks (typecheck, build, tests — see `docs/COMMANDS.md` if
+1. Run the project's checks (typecheck, build, tests — see `.docs/environment.md` if
    present, otherwise `package.json` scripts) and fix what they surface.
 2. Confirm every TASKS.md item is checked and NOTES.md tells the reviewer what
    to look at.

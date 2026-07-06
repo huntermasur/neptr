@@ -12,7 +12,7 @@ are the way they are, or they will "fix" deliberate decisions.
 ## Decision
 
 We record every significant architectural decision as a numbered ADR in
-`docs/architecture/adr/`, using this file's format (Context → Decision → Consequences).
+`.docs/architecture/adr/`, using this file's format (Context → Decision → Consequences).
 ADRs are append-only: an accepted ADR is never edited, only superseded by a newer one.
 
 "Significant" means: new dependency with alternatives, new module boundary or pattern,

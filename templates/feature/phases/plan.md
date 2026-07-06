@@ -8,7 +8,7 @@ without guessing.
 
 1. Read the feature description in [../PLAN.md](../PLAN.md).
 2. Orient yourself in the codebase. If the project has a `.agents/` hub
-   (AI_INSTRUCTIONS.md, KNOWLEDGE_MAP.md, INDEX.md), read it first; otherwise
+   (AI_INSTRUCTIONS.md, KNOWLEDGE_MAP.md), read it first; otherwise
    explore the code directly.
 3. Investigate the code the feature touches: existing utilities, patterns, and
    conventions the implementation should reuse.
