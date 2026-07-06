@@ -17,6 +17,14 @@ describe("suggestSection", () => {
     expect(suggestSection("src/lib/openaiApi.ts").section).toBe("integrations");
   });
 
+  it("matches short vendor tokens (aws, s3) only at word starts", () => {
+    expect(suggestSection("src/awsClient.ts").section).toBe("integrations");
+    expect(suggestSection("src/s3Uploader.ts").section).toBe("integrations");
+    expect(suggestSection("src/aws-config.ts").section).toBe("integrations");
+    expect(suggestSection("src/laws/rules.ts").section).not.toBe("integrations");
+    expect(suggestSection("src/render/css3.ts").section).not.toBe("integrations");
+  });
+
   it("maps common role keywords to their sections", () => {
     expect(suggestSection("src/components/Button.tsx").section).toBe("modules");
     expect(suggestSection("src/utils/format.ts").section).toBe("shared");
@@ -84,5 +92,18 @@ describe("buildInventory", () => {
     expect(table).toContain("`src/main.tsx`");
     expect(table).toContain("`src/utils/format.ts`");
     expect(table).not.toContain("node_modules");
+  });
+
+  it("leaves .test./.spec. files to the tests inventory", () => {
+    fs.mkdirSync(path.join(dir, "src"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "src", "a.ts"), "export const a = 1;");
+    fs.writeFileSync(path.join(dir, "src", "a.test.ts"), "export {};");
+    fs.writeFileSync(path.join(dir, "src", "b.spec.tsx"), "export {};");
+
+    const table = buildInventory(dir);
+    expect(table).toContain("Found 1 source file(s)");
+    expect(table).toContain("`src/a.ts`");
+    expect(table).not.toContain("a.test.ts");
+    expect(table).not.toContain("b.spec.tsx");
   });
 });

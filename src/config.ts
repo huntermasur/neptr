@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { isSafeInstallArg } from "./skills-registry.js";
 
 export const VITE_TEMPLATES = [
   "react-ts",
@@ -164,7 +165,7 @@ export function configFromFlags(name: string | undefined, flags: NewFlags): Part
     // These go onto an `npx skills add` command line (through a shell on Windows),
     // so reject anything that isn't a plain owner/repo[@skill] source.
     for (const skill of skills) {
-      if (!/^[\w.-]+\/[\w.-]+(@[\w.-]+)?$/.test(skill)) {
+      if (!isSafeInstallArg(skill)) {
         throw new Error(`Invalid skill "${skill}". Expected owner/repo or owner/repo@skill`);
       }
     }

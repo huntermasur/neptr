@@ -3,7 +3,7 @@ import pc from "picocolors";
 import { bail, ensure } from "./prompts.js";
 import { run } from "./run.js";
 import { neptr } from "./theme.js";
-import { gatherCandidates, type SkillCandidate, type SecurityVerdict } from "./skills-registry.js";
+import { gatherCandidates, isSafeInstallArg, type SkillCandidate, type SecurityVerdict } from "./skills-registry.js";
 
 export interface SkillFlags {
   minInstalls?: string;
@@ -72,6 +72,12 @@ async function installSkills(sources: string[], cwd: string): Promise<{ ok: stri
   const ok: string[] = [];
   const failed: string[] = [];
   for (const source of sources) {
+    // Last gate before the shell: never pass an unvetted string to `run`.
+    if (!isSafeInstallArg(source)) {
+      neptr.warn(`Skipping "${source}" — not a plain owner/repo@skill source.`);
+      failed.push(source);
+      continue;
+    }
     try {
       await run("npx", ["-y", "skills", "add", source, "--agent", "universal", "-y"], {
         cwd,

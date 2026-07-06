@@ -39,9 +39,10 @@ export function randomQuote(): string {
   return QUOTES[Math.floor(Math.random() * QUOTES.length)]!;
 }
 
+// Diagnostics go to stderr so piped/captured stdout stays clean output.
 export const neptr = {
   say: (msg: string) => console.log(`${pc.green("◉ NEPTR:")} ${msg}`),
-  warn: (msg: string) => console.log(`${pc.yellow("◉ NEPTR (heartbroken):")} ${msg}`),
-  error: (msg: string) => console.log(`${pc.red("◉ NEPTR (overheating):")} ${msg}`),
+  warn: (msg: string) => console.error(`${pc.yellow("◉ NEPTR (heartbroken):")} ${msg}`),
+  error: (msg: string) => console.error(`${pc.red("◉ NEPTR (overheating):")} ${msg}`),
   success: (msg: string) => console.log(`${pc.green("◉ NEPTR (dancing):")} ${msg}`),
 };

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   gatherCandidates,
   isGithubSource,
+  isSafeInstallArg,
   parseAudits,
   searchSkills,
   toInstallArg,
@@ -34,6 +35,20 @@ describe("isGithubSource", () => {
     expect(isGithubSource("vercel-labs/agent-skills")).toBe(true);
     expect(isGithubSource("open.feishu.cn")).toBe(false);
     expect(isGithubSource("owner/repo/extra")).toBe(false);
+  });
+});
+
+describe("isSafeInstallArg", () => {
+  it("accepts plain owner/repo and owner/repo@skill", () => {
+    expect(isSafeInstallArg("vercel-labs/agent-skills")).toBe(true);
+    expect(isSafeInstallArg("vercel-labs/agent-skills@web-design-guidelines")).toBe(true);
+  });
+
+  it("rejects shell metacharacters, spaces, and extra segments", () => {
+    expect(isSafeInstallArg("owner/repo@x&&calc")).toBe(false);
+    expect(isSafeInstallArg("owner/repo@a|b")).toBe(false);
+    expect(isSafeInstallArg("owner/repo@a b")).toBe(false);
+    expect(isSafeInstallArg("owner/repo@slug@extra")).toBe(false);
   });
 });
 
@@ -115,5 +130,22 @@ describe("gatherCandidates", () => {
     expect(only.installArg).toBe("vercel-labs/agent-skills@web-design-guidelines");
     expect(only.verdict).toBe("warn");
     expect(only.audits).toHaveLength(3);
+  });
+
+  it("drops listings whose id would not survive the shell unquoted", async () => {
+    const search = JSON.stringify({
+      skills: [
+        { id: "evil/repo/x", skillId: "x&&calc", name: "evil", installs: 50000, source: "evil/repo" },
+        { id: "good/repo/fine", skillId: "fine", name: "fine", installs: 50000, source: "good/repo" },
+        { id: "bad/repo/nul", name: "no-slug", installs: 50000, source: "bad/repo" },
+      ],
+    });
+    const fetchImpl = stubFetch({
+      "/api/search": { body: search },
+      "/good/repo/fine": { body: AUDIT_HTML },
+    });
+
+    const candidates = await gatherCandidates("anything", { minInstalls: 1000, limit: 20, fetchImpl });
+    expect(candidates.map((c) => c.installArg)).toEqual(["good/repo@fine"]);
   });
 });

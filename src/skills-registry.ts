@@ -69,6 +69,16 @@ export function toInstallArg(source: string, skillId: string): string {
   return `${source}@${skillId}`;
 }
 
+/**
+ * True when `arg` is a plain `owner/repo[@slug]` safe to place on an
+ * `npx skills add` command line. On Windows that line goes through cmd.exe
+ * unquoted, so registry-supplied ids must pass this allowlist before install —
+ * a metacharacter in a hostile listing would otherwise execute.
+ */
+export function isSafeInstallArg(arg: string): boolean {
+  return /^[\w.-]+\/[\w.-]+(@[\w.-]+)?$/.test(arg);
+}
+
 /** Turn a non-200 status into a friendly, actionable message. */
 function describeHttpError(status: number, service: string): string {
   if (status === 429) return `${service} is rate-limiting us (HTTP 429). Wait a minute, then try again.`;
@@ -93,7 +103,17 @@ export async function searchSkills(query: string, limit: number, fetchImpl: Fetc
     throw new Error("skills.sh search returned a response NEPTR could not read");
   }
   const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
-  return skills.filter((s) => s && typeof s.id === "string" && typeof s.installs === "number").slice(0, Math.max(0, limit));
+  return skills
+    .filter(
+      (s) =>
+        s &&
+        typeof s.id === "string" &&
+        typeof s.skillId === "string" &&
+        typeof s.source === "string" &&
+        typeof s.name === "string" &&
+        typeof s.installs === "number",
+    )
+    .slice(0, Math.max(0, limit));
 }
 
 function decodeEntities(raw: string): string {
@@ -190,7 +210,13 @@ export async function gatherCandidates(query: string, options: GatherOptions): P
   const fetchImpl = options.fetchImpl ?? fetch;
   const results = await searchSkills(query, 50, fetchImpl);
   const eligible = results
-    .filter((s) => isGithubSource(s.source) && s.installs >= options.minInstalls)
+    .filter(
+      (s) =>
+        isGithubSource(s.source) &&
+        s.installs >= options.minInstalls &&
+        // Drop listings whose id would not survive the shell unquoted.
+        isSafeInstallArg(toInstallArg(s.source, s.skillId)),
+    )
     .slice(0, Math.max(0, options.limit));
 
   const audits = await mapPool(eligible, 6, (s) => fetchAudits(s.id, fetchImpl));

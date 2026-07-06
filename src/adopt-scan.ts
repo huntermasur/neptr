@@ -48,6 +48,11 @@ function toRel(root: string, abs: string): string {
   return path.relative(root, abs).split(path.sep).join("/");
 }
 
+/** True for `.test.` / `.spec.` files — inventoried as tests, never as code. */
+export function isTestFilePath(filePath: string): boolean {
+  return /\.(test|spec)\.[^.]+$/i.test(filePath);
+}
+
 // ---------------------------------------------------------------------------
 // Code inventory (src/ → canonical sections)
 // ---------------------------------------------------------------------------
@@ -67,9 +72,16 @@ export function suggestSection(relPath: string): { section: string; why: string 
   }
 
   // Known third-party vendors → integrations, matched as substrings so glued
-  // names like `stripeClient.ts` or `openaiApi.ts` are still caught.
-  const vendor = /(stripe|discord|openai|anthropic|github|gitlab|twilio|sendgrid|aws|s3|firebase|supabase|auth0|slack|shopify)/.exec(lower);
-  if (vendor) return { section: "integrations", why: `vendor "${vendor[1]}"` };
+  // names like `stripeClient.ts` or `openaiApi.ts` are still caught. The short
+  // tokens (aws, s3) would false-positive as bare substrings (`laws/`, `css3`),
+  // so they must sit at a word start and not run into more lowercase/digits.
+  const vendor =
+    /(stripe|discord|openai|anthropic|github|gitlab|twilio|sendgrid|firebase|supabase|auth0|slack|shopify)/.exec(lower) ??
+    // No /i flag: the token letters cover their own cases so the trailing
+    // lookahead stays case-sensitive and a camel hump (awsClient) counts as
+    // a word end while more lowercase (laws) does not.
+    /(?:^|[^A-Za-z0-9])([aA][wW][sS]|[sS]3)(?![a-z0-9])/.exec(relPath);
+  if (vendor) return { section: "integrations", why: `vendor "${vendor[1]!.toLowerCase()}"` };
 
   const rules: Array<[string, RegExp]> = [
     ["config", /\b(config|settings?|env|feature[-_]?flags?)\b/],
@@ -94,7 +106,10 @@ export function buildInventory(root: string): string {
     return "_No `src/` directory found — there is nothing to restructure. If this project keeps its code elsewhere, tell the planning agent where._";
   }
 
-  const files = walkFiles(srcDir, (name) => SOURCE_EXTENSIONS.has(path.extname(name)));
+  // Test files are excluded here: they belong to the tests inventory
+  // (buildTestsInventory), and listing them in both tables would hand the
+  // planning agent two contradictory targets for the same file.
+  const files = walkFiles(srcDir, (name) => SOURCE_EXTENSIONS.has(path.extname(name)) && !isTestFilePath(name));
   if (files.length === 0) {
     return "_No source files found under `src/` yet._";
   }
@@ -519,9 +534,6 @@ export function suggestTestTarget(relPath: string, srcFiles: Map<string, string>
  * convention. Inventory only — moves happen in the agent's tests workstream.
  */
 export function buildTestsInventory(root: string, pkg: Record<string, unknown>): string {
-  const isTestFile = (name: string): boolean =>
-    SOURCE_EXTENSIONS.has(path.extname(name)) || /\.(test|spec)\./i.test(name);
-
   const found = new Set<string>();
   const walk = (dir: string, inTestDir: boolean): void => {
     let entries: fs.Dirent[];
@@ -535,11 +547,8 @@ export function buildTestsInventory(root: string, pkg: Record<string, unknown>):
       if (entry.isDirectory()) {
         if (SKIP_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
         walk(abs, inTestDir || TEST_DIR_NAMES.has(entry.name.toLowerCase()));
-      } else if (
-        (inTestDir && isTestFile(entry.name)) ||
-        /\.(test|spec)\.[^.]+$/i.test(entry.name)
-      ) {
-        if (SOURCE_EXTENSIONS.has(path.extname(entry.name))) found.add(abs);
+      } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name)) && (inTestDir || isTestFilePath(entry.name))) {
+        found.add(abs);
       }
     }
   };
@@ -556,7 +565,7 @@ export function buildTestsInventory(root: string, pkg: Record<string, unknown>):
   if (fs.existsSync(srcDir)) {
     for (const abs of walkFiles(srcDir, (name) => SOURCE_EXTENSIONS.has(path.extname(name)))) {
       const rel = toRel(root, abs);
-      if (/\.(test|spec)\.[^.]+$/i.test(abs)) continue;
+      if (isTestFilePath(abs)) continue;
       srcFiles.set(path.basename(abs).replace(/\.[^.]+$/, ""), rel);
     }
   }

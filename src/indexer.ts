@@ -9,8 +9,17 @@ export interface IndexFlags {
   quiet?: boolean;
   /** Also install the SessionStart + pre-commit automation into this project. */
   setup?: boolean;
-  /** Exit non-zero if the repo map is out of date; write nothing (CI guard). */
+  /** Exit non-zero if the repo map or marker tables are out of date; write nothing (CI guard). */
   check?: boolean;
+}
+
+/**
+ * Normalize CRLF to LF. Generated content is always LF, but checked-out files
+ * may be CRLF (e.g. `core.autocrlf=true` on Windows); comparing and splicing
+ * through this keeps `--check` and the rewrite-avoidance stable either way.
+ */
+function toLf(text: string): string {
+  return text.replace(/\r\n/g, "\n");
 }
 
 /** Source extensions we scan for exported symbols. */
@@ -190,7 +199,7 @@ export function buildRepoMap(root: string): string {
 function writeRepoMap(root: string, contents: string): boolean {
   const dest = path.join(root, ".docs", "REPO_MAP.md");
   const prev = fs.existsSync(dest) ? fs.readFileSync(dest, "utf8") : "";
-  if (prev === contents) return false;
+  if (toLf(prev) === contents) return false;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, contents);
   return true;
@@ -255,11 +264,30 @@ function keyFileRows(root: string): string {
   return rows.join("\n");
 }
 
-/** Replace the text between `<!-- neptr:<id>:start -->` and `:end` markers. */
+/** Replace the text between `<!-- neptr:<id>:start -->` and `:end` markers (CRLF-tolerant). */
 function spliceMarker(source: string, id: string, replacement: string): { text: string; found: boolean } {
-  const re = new RegExp(`(<!-- neptr:${id}:start -->\\n)[\\s\\S]*?(\\n<!-- neptr:${id}:end -->)`);
+  const re = new RegExp(`(<!-- neptr:${id}:start -->\\r?\\n)[\\s\\S]*?(\\r?\\n<!-- neptr:${id}:end -->)`);
   if (!re.test(source)) return { text: source, found: false };
   return { text: source.replace(re, `$1${replacement}$2`), found: true };
+}
+
+/** A marker-table file's current and freshly recomputed contents, both LF-normalized. */
+interface MarkerRefresh {
+  rel: string;
+  dest: string;
+  original: string;
+  updated: string;
+  found: boolean;
+}
+
+/** Recompute KNOWLEDGE_MAP.md's marker tables in memory; undefined when the file is absent. */
+function computeKnowledgeMap(root: string): MarkerRefresh | undefined {
+  const dest = path.join(root, ".agents", "KNOWLEDGE_MAP.md");
+  if (!fs.existsSync(dest)) return undefined;
+  const original = toLf(fs.readFileSync(dest, "utf8"));
+  const folder = spliceMarker(original, "foldermap", folderMapRows(root));
+  const keyfiles = spliceMarker(folder.text, "keyfiles", keyFileRows(root));
+  return { rel: KNOWLEDGE_MAP_REL, dest, original, updated: keyfiles.text, found: folder.found || keyfiles.found };
 }
 
 /**
@@ -269,14 +297,10 @@ function spliceMarker(source: string, id: string, replacement: string): { text: 
  * absent — e.g. a pre-existing project retrofitted with `neptr index`.
  */
 function refreshKnowledgeMap(root: string, quiet: boolean): boolean {
-  const dest = path.join(root, ".agents", "KNOWLEDGE_MAP.md");
-  if (!fs.existsSync(dest)) return false;
-  const original = fs.readFileSync(dest, "utf8");
+  const computed = computeKnowledgeMap(root);
+  if (!computed) return false;
 
-  const folder = spliceMarker(original, "foldermap", folderMapRows(root));
-  const keyfiles = spliceMarker(folder.text, "keyfiles", keyFileRows(root));
-
-  if (!folder.found && !keyfiles.found) {
+  if (!computed.found) {
     if (!quiet) {
       neptr.warn(
         "KNOWLEDGE_MAP.md has no neptr markers — skipping table refresh. Add " +
@@ -286,7 +310,7 @@ function refreshKnowledgeMap(root: string, quiet: boolean): boolean {
     return false;
   }
 
-  if (keyfiles.text !== original) fs.writeFileSync(dest, keyfiles.text);
+  if (computed.updated !== computed.original) fs.writeFileSync(computed.dest, computed.updated);
   return true;
 }
 
@@ -418,14 +442,10 @@ function mcpTable(root: string): string {
  * file or markers are absent (e.g. a project scaffolded before this feature).
  */
 function refreshCapabilities(root: string, quiet: boolean): boolean {
-  const dest = path.join(root, ".agents", "CAPABILITIES.md");
-  if (!fs.existsSync(dest)) return false;
-  const original = fs.readFileSync(dest, "utf8");
+  const computed = computeCapabilities(root);
+  if (!computed) return false;
 
-  const skills = spliceMarker(original, "skills", skillsTable(root));
-  const mcp = spliceMarker(skills.text, "mcp", mcpTable(root));
-
-  if (!skills.found && !mcp.found) {
+  if (!computed.found) {
     if (!quiet) {
       neptr.warn(
         "CAPABILITIES.md has no neptr markers — skipping inventory refresh. Add " +
@@ -435,8 +455,18 @@ function refreshCapabilities(root: string, quiet: boolean): boolean {
     return false;
   }
 
-  if (mcp.text !== original) fs.writeFileSync(dest, mcp.text);
+  if (computed.updated !== computed.original) fs.writeFileSync(computed.dest, computed.updated);
   return true;
+}
+
+/** Recompute CAPABILITIES.md's inventory tables in memory; undefined when the file is absent. */
+function computeCapabilities(root: string): MarkerRefresh | undefined {
+  const dest = path.join(root, ".agents", "CAPABILITIES.md");
+  if (!fs.existsSync(dest)) return undefined;
+  const original = toLf(fs.readFileSync(dest, "utf8"));
+  const skills = spliceMarker(original, "skills", skillsTable(root));
+  const mcp = spliceMarker(skills.text, "mcp", mcpTable(root));
+  return { rel: CAPABILITIES_REL, dest, original, updated: mcp.text, found: skills.found || mcp.found };
 }
 
 // --- Automation install (hooks) ----------------------------------------------
@@ -517,10 +547,17 @@ export async function runIndex(flags: IndexFlags): Promise<void> {
   const map = buildRepoMap(root);
 
   if (flags.check) {
+    const stale: string[] = [];
     const dest = path.join(root, ".docs", "REPO_MAP.md");
     const current = fs.existsSync(dest) ? fs.readFileSync(dest, "utf8") : "";
-    if (current !== map) {
-      if (!flags.quiet) neptr.warn(`${REPO_MAP_REL} is out of date — run \`neptr index\`.`);
+    if (toLf(current) !== map) stale.push(REPO_MAP_REL);
+    for (const computed of [computeKnowledgeMap(root), computeCapabilities(root)]) {
+      if (computed?.found && computed.updated !== computed.original) stale.push(computed.rel);
+    }
+    if (stale.length > 0) {
+      if (!flags.quiet) {
+        neptr.warn(`${stale.join(", ")} ${stale.length === 1 ? "is" : "are"} out of date — run \`neptr index\`.`);
+      }
       process.exitCode = 1;
     } else if (!flags.quiet) {
       neptr.say("Index is up to date.");
