@@ -46,6 +46,8 @@ describe("writeDockerDrafts", () => {
 
     const dockerfile = fs.readFileSync(path.join(dir, "Dockerfile"), "utf8");
     expect(dockerfile).toContain("# DRAFT");
+    // The parser directive is only honored on line 1 — the DRAFT header must not bury it.
+    expect(dockerfile.split("\n")[0]).toMatch(/^# syntax=/);
     expect(dockerfile).toContain("EXPOSE 4000");
     expect(dockerfile).toContain("RUN npm run build");
     expect(dockerfile).toContain('CMD ["npm", "run", "start"]');

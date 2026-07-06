@@ -38,11 +38,14 @@ export function formatInstalls(n: number): string {
  * phase (`--search-only`) so a planning agent can discover reusable skills and
  * record the exact install commands, without touching the project.
  */
-function reportSearchOnly(term: string, shown: SkillCandidate[], total: number, includeUnverified: boolean): void {
+function reportSearchOnly(term: string, shown: SkillCandidate[], total: number, includeUnverified: boolean, auditsUnavailable: boolean): void {
   if (shown.length === 0) {
     neptr.warn(
-      `Found ${total} match(es) for "${term}", but none have passed every security audit yet. ` +
-        `Re-run with --include-unverified to list them with their audit status.`,
+      auditsUnavailable
+        ? `Found ${total} match(es) for "${term}", but NEPTR could not fetch their security audits ` +
+          `(skills.sh may be rate-limiting). Wait a minute and retry, or use --include-unverified to list them anyway.`
+        : `Found ${total} match(es) for "${term}", but none have passed every security audit yet. ` +
+          `Re-run with --include-unverified to list them with their audit status.`,
     );
     return;
   }
@@ -50,7 +53,9 @@ function reportSearchOnly(term: string, shown: SkillCandidate[], total: number, 
   console.log(pc.bold(`\nSkills matching "${term}" (${includeUnverified ? "all audits shown" : "audit-passing only"}):\n`));
   for (const c of shown) {
     console.log(`${verdictBadge(c.verdict)}  ${pc.bold(c.name)}  ${pc.dim(`${formatInstalls(c.installs)} installs · ${c.source}`)}`);
-    console.log(`   install: ${pc.green(`neptr skill "${c.name}" --yes`)}\n`);
+    // The exact owner/repo@slug, not the display name — re-searching by name
+    // at implement time could resolve to a different skill.
+    console.log(`   install: ${pc.green(`neptr skill "${c.installArg}" --yes`)}\n`);
   }
 }
 
@@ -120,6 +125,31 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
   }
   if (term.length < 2) throw new Error("Search term must be at least two characters");
 
+  // An exact owner/repo[@skill] source — as printed by `--search-only` or
+  // recorded in a plan — installs directly. Re-searching it as free text could
+  // resolve to a different skill at implement time.
+  if (isSafeInstallArg(term) && !flags.searchOnly) {
+    if (!flags.yes) {
+      const go = ensure(await p.confirm({ message: `Install ${pc.bold(term)} into this project?`, initialValue: true }));
+      if (!go) bail();
+    }
+    const spin = p.spinner();
+    spin.start(`Installing ${term}`);
+    const { ok } = await installSkills([term], cwd);
+    if (ok.length) {
+      spin.stop(`${pc.green("✔")} installed ${term}`);
+      p.note(`${pc.green("✔")} ${term}`, "Added to .agents/skills/");
+      neptr.success(`Fresh skill, hot from the oven! ${pc.dim("Restart your agent so it picks it up.")}`);
+      p.outro("NEPTR baked in a new skill!");
+    } else {
+      spin.stop(`${pc.red("✘")} could not install ${term}`);
+      neptr.warn(`Install failed — retry: npx skills add ${term} --agent universal`);
+      p.outro("That one burnt — try again.");
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   const spinner = p.spinner();
   spinner.start(`Searching skills.sh for "${term}"`);
   let candidates: SkillCandidate[];
@@ -139,17 +169,22 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
 
   const verified = candidates.filter((c) => c.verdict === "pass");
   const shown = flags.includeUnverified ? candidates : verified;
+  // When every audit page failed to load, "unaudited" means rate-limited, not unvetted.
+  const auditsUnavailable = candidates.length > 0 && candidates.every((c) => !c.auditsFetched);
 
   if (flags.searchOnly) {
-    reportSearchOnly(term, shown, candidates.length, Boolean(flags.includeUnverified));
+    reportSearchOnly(term, shown, candidates.length, Boolean(flags.includeUnverified), auditsUnavailable);
     p.outro("Search only — nothing installed.");
     return;
   }
 
   if (shown.length === 0) {
     neptr.warn(
-      `Found ${candidates.length} match(es), but none have passed every security audit yet. ` +
-        `Re-run with --include-unverified to see them (and their audit status).`,
+      auditsUnavailable
+        ? `Found ${candidates.length} match(es), but NEPTR could not fetch their security audits ` +
+          `(skills.sh may be rate-limiting). Wait a minute and retry, or use --include-unverified to see them anyway.`
+        : `Found ${candidates.length} match(es), but none have passed every security audit yet. ` +
+          `Re-run with --include-unverified to see them (and their audit status).`,
     );
     p.outro("Pie tin stays empty — nothing installed.");
     return;

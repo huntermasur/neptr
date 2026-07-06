@@ -92,7 +92,9 @@ function reportSearchOnly(term: string, shown: McpCandidate[], total: number): v
     console.log(`${verdictBadge(c.verification.verdict)}  ${pc.bold(c.name)}  ${pc.dim(reasonHint(c))}`);
     console.log(checklistBlock(c));
     if (c.serverConfig) {
-      console.log(`  install: ${pc.green(`neptr mcp "${term}" --yes`)}`);
+      // The server's own name, not the search term — a broad term re-run with
+      // --yes would install every safe match, not just this one.
+      console.log(`  install: ${pc.green(`neptr mcp "${c.name}" --yes`)}`);
     } else {
       console.log(`  ${pc.dim(`no auto-install — see ${c.repositoryUrl ?? "its repo"}`)}`);
     }

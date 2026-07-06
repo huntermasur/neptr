@@ -1,0 +1,5 @@
+# NEPTR generated docs — keep LF so `neptr index` output stays byte-stable
+# (no spurious diffs from the pre-commit hook, no CRLF drift in CI checks).
+.docs/REPO_MAP.md text eol=lf
+.agents/KNOWLEDGE_MAP.md text eol=lf
+.agents/CAPABILITIES.md text eol=lf

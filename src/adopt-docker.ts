@@ -100,7 +100,14 @@ function writeDraft(
     return;
   }
   const src = fs.readFileSync(path.join(TEMPLATES_DIR, templateRelPath), "utf8");
-  fs.writeFileSync(dest, `${header}\n\n${renderString(src, vars)}`);
+  const rendered = renderString(src, vars);
+  // A `# syntax=` parser directive is only honored on the very first line, so
+  // the DRAFT header slots in after it instead of burying it.
+  const syntaxLine = /^#\s*syntax=[^\n]*\n/.exec(rendered);
+  const contents = syntaxLine
+    ? `${syntaxLine[0]}${header}\n\n${rendered.slice(syntaxLine[0].length)}`
+    : `${header}\n\n${rendered}`;
+  fs.writeFileSync(dest, contents);
   result.written.push(fileName);
 }
 

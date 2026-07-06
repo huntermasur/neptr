@@ -59,6 +59,16 @@ describe("marker table refresh", () => {
     expect(map).toContain("| `src/` |");
   });
 
+  it("installs .gitattributes pinning generated docs to LF, idempotently", () => {
+    seedProject(dir, "\n");
+    installIndexing(dir);
+    const attrs = fs.readFileSync(path.join(dir, ".gitattributes"), "utf8");
+    expect(attrs).toContain(".docs/REPO_MAP.md text eol=lf");
+    expect(attrs).toContain(".agents/KNOWLEDGE_MAP.md text eol=lf");
+    installIndexing(dir);
+    expect(fs.readFileSync(path.join(dir, ".gitattributes"), "utf8")).toBe(attrs);
+  });
+
   it("refreshes CRLF marker tables (autocrlf checkouts)", () => {
     seedProject(dir, "\r\n");
     installIndexing(dir);

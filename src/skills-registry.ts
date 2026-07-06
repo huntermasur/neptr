@@ -41,6 +41,9 @@ export type SecurityVerdict = "pass" | "warn" | "fail" | "unaudited";
 export interface SkillCandidate extends SkillSearchResult {
   audits: AuditEntry[];
   verdict: SecurityVerdict;
+  /** False when the audit page could not be fetched (network error / rate limit),
+   *  so "unaudited" means "unknown" rather than "no audits exist". */
+  auditsFetched: boolean;
   /** `owner/repo@slug` source to hand to `npx skills add`. */
   installArg: string;
 }
@@ -167,14 +170,16 @@ export function verdictFromAudits(audits: AuditEntry[]): SecurityVerdict {
   return "pass";
 }
 
-/** Fetch and parse a single skill's audits. Network/parse errors yield []. */
-export async function fetchAudits(id: string, fetchImpl: FetchLike = fetch): Promise<AuditEntry[]> {
+/** Fetch and parse a single skill's audits. Returns null when the page could
+ *  not be fetched (network error / rate limit) — distinct from [] (page loaded,
+ *  no audits listed) so callers don't misreport throttling as "unaudited". */
+export async function fetchAudits(id: string, fetchImpl: FetchLike = fetch): Promise<AuditEntry[] | null> {
   try {
     const { status, text } = await fetchText(`${BASE}/${id}`, fetchImpl);
-    if (status !== 200) return [];
+    if (status !== 200) return null;
     return parseAudits(text);
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -222,11 +227,12 @@ export async function gatherCandidates(query: string, options: GatherOptions): P
   const audits = await mapPool(eligible, 6, (s) => fetchAudits(s.id, fetchImpl));
 
   return eligible.map((s, i) => {
-    const a = audits[i] ?? [];
+    const a = audits[i] ?? null;
     return {
       ...s,
-      audits: a,
-      verdict: verdictFromAudits(a),
+      audits: a ?? [],
+      verdict: verdictFromAudits(a ?? []),
+      auditsFetched: a !== null,
       installArg: toInstallArg(s.source, s.skillId),
     };
   });

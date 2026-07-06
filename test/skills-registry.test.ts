@@ -132,6 +132,18 @@ describe("gatherCandidates", () => {
     expect(only.audits).toHaveLength(3);
   });
 
+  it("flags candidates whose audit page could not be fetched", async () => {
+    const search = JSON.stringify({
+      skills: [{ id: "a/b/one", skillId: "one", name: "one", installs: 5000, source: "a/b" }],
+    });
+    // No route for the skill page → 404 → audits unknown, not "none exist".
+    const fetchImpl = stubFetch({ "/api/search": { body: search } });
+
+    const candidates = await gatherCandidates("one", { minInstalls: 1000, limit: 20, fetchImpl });
+    expect(candidates[0]?.auditsFetched).toBe(false);
+    expect(candidates[0]?.verdict).toBe("unaudited");
+  });
+
   it("drops listings whose id would not survive the shell unquoted", async () => {
     const search = JSON.stringify({
       skills: [

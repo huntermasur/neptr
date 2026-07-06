@@ -377,7 +377,8 @@ function collectSkills(root: string): SkillRow[] {
     }
     rows.push({ name, description });
   }
-  return rows.sort((a, b) => a.name.localeCompare(b.name));
+  // Code-unit sort (not localeCompare): output must be byte-identical across machines.
+  return rows.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 }
 
 interface McpRow {
@@ -412,7 +413,8 @@ function collectMcpServers(root: string): McpRow[] {
     }
     rows.push({ key, launch, needsEnv: !!cfg.env && Object.keys(cfg.env).length > 0 });
   }
-  return rows.sort((a, b) => a.key.localeCompare(b.key));
+  // Code-unit sort (not localeCompare): output must be byte-identical across machines.
+  return rows.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 
 /** Render the skills inventory as a markdown table (or an empty-state line). */
@@ -498,6 +500,19 @@ function installClaudeHook(root: string): void {
   fs.writeFileSync(dest, JSON.stringify(settings, null, 2) + "\n");
 }
 
+/**
+ * Ensure .gitattributes pins the generated docs to LF, so autocrlf checkouts
+ * don't turn every `neptr index` run into churn (or fail `--check` in CI).
+ * Appends only the missing NEPTR block; never rewrites existing user content.
+ */
+function installGitAttributes(root: string): void {
+  const src = fs.readFileSync(path.join(TEMPLATES_DIR, "project", ".gitattributes"), "utf8");
+  const dest = path.join(root, ".gitattributes");
+  const existing = fs.existsSync(dest) ? fs.readFileSync(dest, "utf8") : "";
+  if (existing.includes("# NEPTR generated docs")) return;
+  fs.writeFileSync(dest, (existing.trimEnd() ? existing.trimEnd() + "\n\n" : "") + src);
+}
+
 /** Copy the tracked pre-commit hook into .githooks/ and mark it executable. */
 function installGitPreCommitHook(root: string): void {
   const src = path.join(TEMPLATES_DIR, ".githooks", "pre-commit");
@@ -529,6 +544,7 @@ export function installIndexing(root: string): void {
   // refresh the Folder map — otherwise they'd be missing from the first build.
   installClaudeHook(root);
   installGitPreCommitHook(root);
+  installGitAttributes(root);
   writeRepoMap(root, buildRepoMap(root));
   refreshKnowledgeMap(root, true);
   refreshCapabilities(root, true);
@@ -572,6 +588,7 @@ export async function runIndex(flags: IndexFlags): Promise<void> {
   if (flags.setup) {
     installClaudeHook(root);
     installGitPreCommitHook(root);
+    installGitAttributes(root);
     await activateGitHooks(root);
   }
 
