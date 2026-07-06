@@ -42,30 +42,57 @@ process, including the documentation policy you must apply before finishing.
 `;
 }
 
+export interface WriteAgentOptions {
+  /** When false, an existing instruction file is left untouched (see `neptr adopt`). */
+  overwrite?: boolean;
+  /** Called with each destination path that was skipped because it already existed. */
+  onSkip?: (relPath: string) => void;
+}
+
 /**
- * Generate root instruction files for each selected agent, plus AGENTS.md which is
+ * Write the root instruction files for each selected agent, plus AGENTS.md which is
  * always created. Files that map to the same path (e.g. codex + opencode both use
- * AGENTS.md) are written once.
+ * AGENTS.md) are written once. Returns the relative paths that were written.
  */
-export async function agentsStep(config: NEPTRConfig): Promise<string> {
+export function writeAgentInstructions(
+  targetDir: string,
+  projectName: string,
+  agents: string[],
+  opts: WriteAgentOptions = {},
+): string[] {
   // AGENTS.md is always included, regardless of selection.
   const files = new Set<string>(["AGENTS.md"]);
-  for (const id of config.agents) {
+  for (const id of agents) {
     const choice = AGENT_CHOICES.find((a) => a.id === id);
     if (choice) files.add(choice.file);
   }
 
+  const written: string[] = [];
   for (const relPath of files) {
+    const destPath = path.join(targetDir, relPath);
+    if (opts.overwrite === false && fs.existsSync(destPath)) {
+      opts.onSkip?.(relPath);
+      continue;
+    }
     const depth = relPath.split("/").length - 1;
-    let content = agentBody(config.projectName, "../".repeat(depth));
+    let content = agentBody(projectName, "../".repeat(depth));
     // Cursor rule files need frontmatter so the rule is always applied.
     if (relPath.endsWith(".mdc")) {
-      content = `---\ndescription: ${config.projectName} agent instructions\nalwaysApply: true\n---\n\n${content}`;
+      content = `---\ndescription: ${projectName} agent instructions\nalwaysApply: true\n---\n\n${content}`;
     }
-    const destPath = path.join(config.targetDir, relPath);
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
     fs.writeFileSync(destPath, content);
+    written.push(relPath);
   }
 
-  return [...files].join(", ");
+  return written;
+}
+
+/**
+ * Generate root instruction files for each selected agent, plus AGENTS.md which is
+ * always created.
+ */
+export async function agentsStep(config: NEPTRConfig): Promise<string> {
+  const written = writeAgentInstructions(config.targetDir, config.projectName, config.agents);
+  return written.join(", ");
 }

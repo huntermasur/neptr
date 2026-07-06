@@ -17,7 +17,7 @@ Docker.
 - Test scaffolds go in a throwaway directory (scratchpad), never inside this repo
 
 ## Architecture
-- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `feature`, `skill`, `mcp`, `index`
+- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `adopt`, `feature`, `skill`, `mcp`, `index`
 - `src/theme.ts` — NEPTR ASCII art, palette, quotes; all user-facing output goes through this
 - `src/wizard.ts` — @clack/prompts flow producing a `NEPTRConfig`
 - `src/prompts.ts` — shared clack helpers (`bail`, `ensure` cancel handling)
@@ -28,6 +28,21 @@ Docker.
   and `neptr mcp --search-only`; the implement phase installs them with
   `neptr skill --yes` / `neptr mcp --yes`. This discovery/install behavior lives in
   the phase templates (`templates/feature/phases/*.md`), not in `feature.ts`.
+- `src/adopt.ts` — `neptr adopt`: turns an **existing** project into a NEPTR
+ project. Two halves, mirroring the split between what's safe to automate and what
+ isn't. **Part A (deterministic, additive, non-destructive):** infers a
+ `NEPTRConfig` from the project (name from package.json, stack from deps via
+ `inferTemplate`) and retrofits the `.agents/` hub, `.docs/` tree, root agent
+ instruction files, the empty role-based `src/` sections + `tests/`, and (unless
+ `--no-index`) the code index + hooks — reusing `renderDir`/`writeAgentInstructions`/
+ `installIndexing` with `{ overwrite: false }` so it never clobbers existing files.
+ **Part B (agent-driven):** scaffolds a migration workspace at
+ `.docs/feature/<slug>/` (default slug `adopt-neptr-layout`) from `templates/adopt/`,
+ pre-filling NOTES.md with `buildInventory()` — a scan of `src/` where
+ `suggestSection()` heuristically proposes a target section per file — then prints
+ the plan → implement → review copy-paste prompts. Like `feature.ts`, it never calls
+ an LLM; the risky file moves + import rewrites are the agent's job. Flags:
+ `--name`, `--agents`, `--no-index`, `--no-plan`, `--yes`.
 - `src/skill.ts` / `src/skills-registry.ts` — `neptr skill`: searches skills.sh,
   filters to popular skills whose security audits all pass, and installs the
   selected ones into `.agents/skills/` via `npx skills add`.

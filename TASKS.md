@@ -121,8 +121,20 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] `neptr index` registered in `src/cli.ts`
 - [ ] Verified: scaffold + `neptr index` refresh + determinism + retrofit in a scratchpad project
 
+## M14 — `neptr adopt` (turn an existing project into a NEPTR project)
+- [x] `src/adopt.ts` — Part A retrofit (infer name/stack, non-destructive `.agents/`,
+      `.docs/`, agent files, `src/` sections, `tests/`, code index) reusing
+      `renderDir`/`writeAgentInstructions`/`installIndexing` with `{ overwrite: false }`
+- [x] `src/template.ts` — `RenderOptions` (`overwrite`/`onSkip`) on `renderFile`/`renderDir`;
+      `steps/agents.ts` — extracted `writeAgentInstructions` with the same options
+- [x] Part B: `templates/adopt/` (PLAN/TASKS/STATUS/NOTES + `phases/{plan,implement,review}.md`)
+      rendered into `.docs/feature/<slug>/`; NOTES pre-filled by `buildInventory()` +
+      `suggestSection()` heuristic mapping; plan → implement → review prompts printed
+- [x] `neptr adopt` registered in `src/cli.ts` (`--name/--agents/--no-index/--no-plan/--yes`)
+- [x] `test/adopt.test.ts` — suggestSection / inferTemplate / buildInventory
+- [x] Verified: `neptr adopt --yes` retrofits + plans in a scratchpad; re-run leaves 22 files untouched
+
 ## Backlog (future ideas)
-- [ ] `neptr add <feature>` — retrofit docs/docker/mcp/skills onto an existing project
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines
 - [ ] Live docker compose build verification once Docker Desktop is installed
 - [ ] Publish to npm so `npx neptr-cli` works without cloning

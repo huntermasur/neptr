@@ -35,6 +35,7 @@ npm link        # makes `neptr` available globally
 neptr new my-app          # interactive NEPTR wizard
 neptr new my-app --yes    # accept all defaults
 neptr doctor              # check your environment
+neptr adopt               # turn the current existing project into a NEPTR project
 neptr feature             # start a plan → implement → review feature workspace
 neptr skill web design    # find & install security-checked skills from skills.sh
 neptr mcp postgres        # find & install safety-checked MCP servers from the MCP registry
@@ -105,6 +106,30 @@ Both hooks are non-blocking: if `neptr` isn't on your PATH or indexing fails, yo
 session and commits proceed anyway. To add indexing to a project that predates this
 feature, run `neptr index --setup` once inside it; `neptr index --check` is a CI guard
 that fails when the map is stale.
+
+## Adopting an existing project
+
+`neptr new` is for greenfield projects; `neptr adopt` retrofits everything onto a
+project you already have. Run it from the project root. It works in two halves,
+split along the line between what's safe to automate and what isn't:
+
+- **Retrofit (automatic, additive, non-destructive):** it infers the project name
+  and stack, then adds the `.agents/` hub, the `.docs/` tree, the root agent
+  instruction files, the empty role-based `src/` sections (`app/`, `modules/`,
+  `services/`, `data/`, `integrations/`, `shared/`, `config/`) + `tests/`, and the
+  code index with its hooks. Any file that already exists is **left untouched** —
+  nothing is overwritten.
+- **Restructure (agent-driven plan):** moving your existing `src/` files into the
+  new layout and fixing every import is risky and codebase-specific, so NEPTR
+  doesn't do it blindly. Instead it scaffolds a migration workspace at
+  `.docs/feature/adopt-neptr-layout/`, pre-fills its notes with a scan of your
+  current `src/` (each file tagged with a *suggested* target section), and prints
+  three copy-paste prompts — plan → implement → review — for an agent to execute
+  and for you to review. As with `neptr feature`, NEPTR never calls an LLM itself.
+
+Flags: `--name <slug>` (rename the migration workspace), `--agents <list>` (which
+agent instruction files to write), `--no-index` (skip the code index/hooks),
+`--no-plan` (retrofit the scaffolding only), and `-y, --yes` (no prompts).
 
 ## Feature workflow
 
