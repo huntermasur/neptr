@@ -27,22 +27,24 @@ _Not planned yet — the plan phase fills in everything below._
 
 <!-- Planning agent: reusable skills.sh skills that fit the approach, found with
      `neptr skill "<keywords>" --search-only`. List only audit-passing skills.
-     The implementer runs each command below in the implement phase; neptr skill
-     re-checks the security audit and skips anything that fails. Write
-     "None needed." if nothing fits. -->
+     "Use it for" names the concrete TASKS.md tasks the skill applies to — tag
+     those tasks with `(skill: <name>)`. The implementer runs each command below
+     in the implement phase; neptr skill re-checks the security audit and skips
+     anything that fails. Write "None needed." if nothing fits. -->
 
-| Skill | Why | Install command |
+| Skill | Use it for | Install command |
 | --- | --- | --- |
 
 ## Recommended MCP servers
 
 <!-- Planning agent: MCP servers from the official registry that fit the approach,
      found with `neptr mcp "<keywords>" --search-only`. Prefer servers marked
-     `safe`. The implementer runs each command below in the implement phase;
-     neptr mcp re-runs the safety check and adds only safe servers. Write
-     "None needed." if nothing fits. -->
+     `safe`. "Use it for" names the concrete TASKS.md tasks the server applies
+     to — tag those tasks with `(MCP: <server>)`. The implementer runs each
+     command below in the implement phase; neptr mcp re-runs the safety check and
+     adds only safe servers. Write "None needed." if nothing fits. -->
 
-| Server | Why | Install command |
+| Server | Use it for | Install command |
 | --- | --- | --- |
 
 ## Risks & open questions

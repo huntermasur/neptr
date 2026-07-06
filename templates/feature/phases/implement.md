@@ -46,6 +46,17 @@ The plan phase already made the decisions — your job is to execute it faithful
 - Follow the plan. Work through [../TASKS.md](../TASKS.md) in order (only your
   milestone's section on a milestone run); check off each item only after
   verifying it works.
+- **Use what the plan installed.** Before starting a task tagged
+  `(skill: <name>)`, read `.agents/skills/<name>/SKILL.md` and follow its
+  guidance for that task — the skill's approach overrides your habits. For a
+  task tagged `(MCP: <server>)`, use that server's tools for the work instead
+  of ad-hoc shell commands or hand-rolled scripts. If a table row in the
+  **Recommended skills** / **Recommended MCP servers** sections of
+  [../PLAN.md](../PLAN.md) names a task that lost its tag, honor the table.
+- Record in [../NOTES.md](../NOTES.md) where each recommended skill and MCP
+  server was actually used. If you decide one doesn't fit after all, write down
+  why before working around it — silent non-use is a plan deviation the
+  reviewer will flag.
 - Record decisions, deviations, and gotchas in [../NOTES.md](../NOTES.md) as you
   go — not at the end.
 - If the plan turns out to be wrong somewhere, make the smallest sensible
@@ -66,7 +77,9 @@ The plan phase already made the decisions — your job is to execute it faithful
    `implementing`, and stop — tell the user to run the Milestone N+1 prompt
    from `{{featurePath}}/PROMPTS.md` in a fresh agent session.
 3. **Unscoped run, or the last milestone:** confirm every TASKS.md item across
-   all milestones is checked and NOTES.md tells the reviewer what to look at,
-   set the status line to `Status: implemented`, and append a log row.
+   all milestones is checked and NOTES.md tells the reviewer what to look at —
+   including where each recommended skill and MCP server was used, or why it
+   wasn't — then set the status line to `Status: implemented` and append a log
+   row.
 4. Stop. Tell the user implementation is complete and the next step is the
    review phase (`{{featurePath}}/phases/review.md`).

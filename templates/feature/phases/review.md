@@ -20,6 +20,10 @@ Assume nothing the implementer wrote is true until you have verified it.
 - Run the project's verification commands (`.docs/environment.md` if present,
   otherwise `package.json` scripts): typecheck, build, tests.
 - Exercise the feature itself where possible, not just the checks.
+- If [../PLAN.md](../PLAN.md) recommends skills or MCP servers, verify each was
+  installed and [../NOTES.md](../NOTES.md) records where it was used — or a
+  stated reason it wasn't. For any silent non-use, check whether the work it
+  covered was done correctly without it, and log the finding in NOTES.md.
 - Fix any bugs you find. Log each fix in [../NOTES.md](../NOTES.md) under a
   `## Review fixes` heading.
 - Confirm the documentation updates the project requires actually happened (see

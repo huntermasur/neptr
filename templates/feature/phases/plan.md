@@ -29,7 +29,9 @@ You size every downstream prompt to its complexity and record the pick on its
    [skills.sh](https://skills.sh) and lists only skills whose security audits pass —
    it installs nothing. Record the ones worth using in the **Recommended skills**
    section of [../PLAN.md](../PLAN.md), each with the exact `neptr skill "…" --yes`
-   command the implementer should run. If nothing fits, write "None needed."
+   command the implementer should run and the concrete tasks it should be used
+   for — a skill nobody is told when to use is a skill nobody uses. If nothing
+   fits, write "None needed."
 6. Look for helpful MCP servers the same way. For each external system the feature
    talks to (a database, a browser, GitHub, a SaaS API, the filesystem…), run
    `neptr mcp "<keywords>" --search-only` from the project root. This searches the
@@ -37,12 +39,16 @@ You size every downstream prompt to its complexity and record the pick on its
    vendor, repo activity, access surface, local/Docker runnability, version
    pinning) — it installs nothing. Record the servers worth using in the
    **Recommended MCP servers** section of [../PLAN.md](../PLAN.md), each with the
-   exact `neptr mcp "…" --yes` command the implementer should run. Prefer servers
-   marked `safe`. If nothing fits, write "None needed."
+   exact `neptr mcp "…" --yes` command the implementer should run and the concrete
+   tasks it should be used for. Prefer servers marked `safe`. If nothing fits,
+   write "None needed."
 7. Rewrite [../TASKS.md](../TASKS.md) as an ordered checklist. Each task must be
    small, concrete, and independently verifiable, with enough detail that the
    implementer never has to re-derive the approach. Include early tasks to
-   install the recommended skills and MCP servers (if any).
+   install the recommended skills and MCP servers (if any), and tag every task a
+   recommended skill or MCP server applies to by ending its line with
+   `(skill: <name>)` or `(MCP: <server>)` — the implementer treats those tags as
+   instructions, not suggestions.
 8. Decide whether the feature needs **milestones**. Split when any of these
    holds: TASKS.md has more than ~12 tasks; the tasks span 3+ unrelated areas of
    the codebase; or an implementer would need more files in context than fits
