@@ -13,7 +13,6 @@ import { mcpStep } from "./steps/mcp.js";
 import { dockerStep } from "./steps/docker.js";
 import { installStep } from "./steps/install.js";
 import { skillsStep } from "./steps/skills.js";
-import { codegraphStep } from "./steps/codegraph.js";
 import { envStep } from "./steps/env.js";
 import { gitStep } from "./steps/git.js";
 import { commandExists, run } from "./run.js";
@@ -75,12 +74,6 @@ const STEPS: Step[] = [
     enabled: (c) => c.skills.length > 0,
     run: skillsStep,
     fix: (c) => c.skills.map((s) => `npx skills add ${s} --agent universal -y`).join(" && "),
-  },
-  {
-    name: "Build codegraph index",
-    enabled: (c) => c.mcpServers.includes("codegraph"),
-    run: codegraphStep,
-    fix: () => "npm i -g @colbymchenry/codegraph && codegraph init",
   },
   {
     name: "Generate env files",
@@ -177,7 +170,7 @@ program
   .argument("[name]", "project name")
   .description("Scaffold a new project")
   .option("-t, --template <template>", "Vite template (e.g. react-ts, vue-ts, svelte-ts)")
-  .option("--mcp <list>", "comma-separated MCP servers: codegraph,playwright,context7,github (or 'none')")
+  .option("--mcp <list>", "comma-separated MCP servers: playwright,context7,github (or 'none')")
   .option("--skills <list>", "comma-separated skills.sh sources: owner/repo@skill, or owner/repo for a whole repo (or 'none')")
   .option("--agents <list>", "comma-separated AI agents: claude,copilot,cursor,gemini,codex,opencode (or 'none'); AGENTS.md always included")
   .option("--docker", "generate Docker setup")

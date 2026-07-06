@@ -7,11 +7,6 @@ import type { NEPTRConfig, McpServer } from "../config.js";
  * Claude Code and other AGENTS.md-era tools).
  */
 const SERVER_CONFIGS: Record<McpServer, object> = {
-  codegraph: {
-    type: "stdio",
-    command: "codegraph",
-    args: ["serve", "--mcp"],
-  },
   playwright: {
     type: "stdio",
     command: "npx",

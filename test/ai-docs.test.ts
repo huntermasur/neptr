@@ -43,9 +43,4 @@ describe("templateVars", () => {
     expect(all.extraFolderRows).toContain(".cursor/");
     expect(all.extraFolderRows).toContain("Dockerfile");
   });
-
-  it("mentions codegraph orientation only when codegraph is selected", () => {
-    expect(templateVars(config({ mcpServers: ["codegraph"] })).codegraphOrientation).toContain("codegraph");
-    expect(templateVars(config({})).codegraphOrientation).toBe("");
-  });
 });

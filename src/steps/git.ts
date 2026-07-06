@@ -5,7 +5,6 @@ import type { NEPTRConfig } from "../config.js";
 
 const EXTRA_IGNORES = `
 # NEPTR additions
-.codegraph/
 .env
 .env.*
 !.env.example
@@ -26,7 +25,7 @@ export async function gitStep(config: NEPTRConfig): Promise<void> {
 
   const gitignorePath = path.join(config.targetDir, ".gitignore");
   const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, "utf8") : "";
-  if (!existing.includes(".codegraph/")) {
+  if (!existing.includes("# NEPTR additions")) {
     fs.writeFileSync(gitignorePath, existing.trimEnd() + "\n" + EXTRA_IGNORES);
   }
 

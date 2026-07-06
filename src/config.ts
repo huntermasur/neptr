@@ -23,7 +23,7 @@ export const VITE_TEMPLATES = [
 ] as const;
 export type ViteTemplate = (typeof VITE_TEMPLATES)[number];
 
-export const MCP_SERVERS = ["codegraph", "playwright", "context7", "github"] as const;
+export const MCP_SERVERS = ["playwright", "context7", "github"] as const;
 export type McpServer = (typeof MCP_SERVERS)[number];
 
 /** AI agents that can be wired up. Each maps to a root instruction file. */
@@ -96,9 +96,10 @@ export interface NewFlags {
 
 export const DEFAULTS = {
   template: "react-ts" as ViteTemplate,
-  mcpServers: ["codegraph"] as McpServer[],
-  skills: [] as string[],
-  agents: ["claude", "copilot"] as string[],
+  mcpServers: [] as McpServer[],
+  // Auto-select every curated skill by default; users can trim in the wizard.
+  skills: CURATED_SKILLS.map((s) => s.installArg) as string[],
+  agents: ["claude", "cursor"] as string[],
   docker: true,
   git: true,
   installDeps: true,

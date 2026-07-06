@@ -6,7 +6,7 @@ index, plus a `skills/` folder for installed skills), a docs tree
 (COMMANDS.md, an `architecture/` folder with ARCHITECTURE.md + ADRs, a `domain/` folder
 with DOMAIN_DOCUMENTATION.md + DOMAIN_INSTRUCTIONS.md, and a `files/` folder for user
 documents), MCP config,
-skills.sh skills, codegraph indexing, and Docker.
+skills.sh skills, and Docker.
 
 ## Commands
 - `npm run build` — bundle `src/cli.ts` to `dist/cli.js` via tsup

@@ -17,7 +17,6 @@ import {
 } from "./config.js";
 
 const MCP_HINTS: Record<McpServer, string> = {
-  codegraph: "local code knowledge graph (surgical AI context)",
   playwright: "browser automation — let the agent drive your app",
   context7: "up-to-date library docs for the agent",
   github: "PRs, issues, and repo workflows",
@@ -74,6 +73,7 @@ export async function runWizard(partial: Partial<NEPTRConfig>): Promise<NEPTRCon
     ensure(
       await p.multiselect<string>({
         message: "Any skills from skills.sh? (installed via npx skills add)",
+        initialValues: DEFAULTS.skills,
         required: false,
         options: CURATED_SKILLS.map((s) => ({ value: s.installArg, label: s.name, hint: s.hint })),
       }),

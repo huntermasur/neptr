@@ -25,7 +25,6 @@ You are a collaborator, not just an executor. Throughout every task:
 ## Before you start any task
 1. Orient yourself with [KNOWLEDGE_MAP.md](KNOWLEDGE_MAP.md), and use
    [INDEX.md](INDEX.md) to jump to the files involved.
-   {{codegraphOrientation}}
 2. Check [../docs/COMMANDS.md](../docs/COMMANDS.md) for how to run things.
 3. If [features/](features/) contains feature folders, check each one's `STATUS.md` —
    a task that relates to an in-flight feature must follow that folder's `phases/`

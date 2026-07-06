@@ -51,14 +51,6 @@ const CHECKS: Check[] = [
     },
   },
   {
-    name: "codegraph",
-    required: false,
-    run: async () => {
-      const found = await commandExists("codegraph");
-      return { ok: found, detail: found ? "installed" : "not installed (NEPTR can install it during scaffold)" };
-    },
-  },
-  {
     name: "npm registry reachable",
     required: false,
     run: async () => {
@@ -66,7 +58,7 @@ const CHECKS: Check[] = [
         const res = await fetch("https://registry.npmjs.org/-/ping", { signal: AbortSignal.timeout(10_000) });
         return { ok: res.ok, detail: res.ok ? "online" : `HTTP ${res.status}` };
       } catch {
-        return { ok: false, detail: "offline? skills/vite/codegraph steps need the network" };
+        return { ok: false, detail: "offline? skills/vite steps need the network" };
       }
     },
   },

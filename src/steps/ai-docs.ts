@@ -28,12 +28,6 @@ export function templateVars(config: NEPTRConfig): TemplateVars {
   if (config.mcpServers.length) {
     toolingLines.push(`- **MCP servers** (configured in \`.mcp.json\`): ${config.mcpServers.join(", ")}.`);
   }
-  if (config.mcpServers.includes("codegraph")) {
-    toolingLines.push(
-      "- **codegraph**: a local knowledge-graph index of this codebase (`.codegraph/`, gitignored). " +
-        "Prefer querying it over manual file exploration; it auto-syncs on file changes.",
-    );
-  }
   if (config.skills.length) {
     toolingLines.push(`- **Skills** installed from skills.sh: ${config.skills.join(", ")}.`);
   }
@@ -58,9 +52,6 @@ export function templateVars(config: NEPTRConfig): TemplateVars {
     date,
     extraCommands: config.docker ? "docker compose up dev   # dev server in Docker\n" : "",
     toolingNotes: toolingLines.join("\n"),
-    codegraphOrientation: config.mcpServers.includes("codegraph")
-      ? "For code questions (where is X defined, what calls Y), query the codegraph MCP server before manual exploration."
-      : "",
     extraFolderRows: folderRows.join("\n"),
     viteConfigRow: viteConfigFile
       ? `| [../${viteConfigFile}](../${viteConfigFile}) | Vite build/dev configuration |`

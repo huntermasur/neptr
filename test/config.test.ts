@@ -25,7 +25,7 @@ describe("configFromFlags", () => {
 
   it("rejects unknown templates and unknown MCP servers", () => {
     expect(() => configFromFlags(undefined, { template: "angular" })).toThrow(/Unknown template/);
-    expect(() => configFromFlags(undefined, { mcp: "codegraph,nope" })).toThrow(/Unknown MCP server/);
+    expect(() => configFromFlags(undefined, { mcp: "playwright,nope" })).toThrow(/Unknown MCP server/);
   });
 
   it('treats "none" and empty strings as empty lists', () => {

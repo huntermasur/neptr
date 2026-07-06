@@ -16,10 +16,8 @@ coding agents.
   folder for installed skills.sh skills — with rules that keep the map and index in sync with the code
 - **Docs tree** — `COMMANDS.md`, an `architecture/` folder (architecture doc, specs, ADRs),
   a `domain/` folder (documentation guide + domain instructions), and a `files/` folder for user documents
-- **MCP config** (`.mcp.json`) — codegraph, playwright, context7, github (your pick)
+- **MCP config** (`.mcp.json`) — playwright, context7, github (your pick)
 - **Skills** — checklist of top [skills.sh](https://skills.sh) skills
-- **codegraph** — [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph)
-  index for surgical AI context
 - **Docker** — multi-stage Dockerfile + compose for dev and prod
 - **Git** — init, .gitignore, initial commit, dependencies installed
 
