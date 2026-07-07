@@ -26,8 +26,10 @@ _Not planned yet — the plan phase fills in everything below._
 ## Recommended skills
 
 <!-- Planning agent: reusable skills.sh skills that fit the approach — the plan
-     phase installs these itself with `neptr skill "<keywords>" --yes` (list only
-     audit-passing skills that actually installed). "Use it for" names the concrete
+     phase installs these itself with the exact per-skill command printed by
+     `neptr skill "<keywords>" --search-only`, i.e.
+     `neptr skill "<owner>/<repo>@<slug>" --yes` (list only audit-passing skills
+     that actually installed). "Use it for" names the concrete
      TASKS.md tasks the skill applies to — tag those tasks with `(skill: <name>)`.
      Keep the install command for reference/reinstall. Also add each newly
      installed skill to NOTES.md's "Installed for this feature" table so review can
@@ -39,7 +41,8 @@ _Not planned yet — the plan phase fills in everything below._
 ## Recommended MCP servers
 
 <!-- Planning agent: MCP servers from the official registry that fit the approach —
-     the plan phase installs these itself with `neptr mcp "<keywords>" --yes`
+     the plan phase installs these itself with the exact per-server command printed
+     by `neptr mcp "<keywords>" --search-only`, i.e. `neptr mcp "<server name>" --yes`
      (prefer servers marked `safe`; list only ones that actually installed). "Use
      it for" names the concrete TASKS.md tasks the server applies to — tag those
      tasks with `(MCP: <server>)`. Keep the install command for reference/reinstall.

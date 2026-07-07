@@ -27,9 +27,10 @@ You size every downstream prompt to its complexity and record the pick on its
    needs. For each capability the feature needs (a framework, a tricky
    integration, a well-known pattern), run `neptr skill "<keywords>" --search-only`
    from the project root to see the audit-passing candidates on
-   [skills.sh](https://skills.sh) (this installs nothing). Then download the ones
-   worth using by running `neptr skill "<keywords>" --yes` — it re-checks the
-   security audit and installs only passing skills into `.agents/skills/`. For
+   [skills.sh](https://skills.sh) (this installs nothing). Then install each one
+   worth using with the exact command printed under it —
+   `neptr skill "<owner>/<repo>@<slug>" --yes`. Never re-run the keyword search
+   with `--yes`: that installs **every** audit-passing match, not your picks. For
    every skill you install, add a row to the **Recommended skills** section of
    [../PLAN.md](../PLAN.md) with the concrete tasks it should be used for — a skill
    nobody is told when to use is a skill nobody uses — and a row to the **Installed
@@ -42,11 +43,15 @@ You size every downstream prompt to its complexity and record the pick on its
    the filesystem…), run `neptr mcp "<keywords>" --search-only` from the project
    root to see each candidate with its safety checklist (verified vendor, repo
    activity, access surface, local/Docker runnability, version pinning; installs
-   nothing). Then add the ones worth using with `neptr mcp "<keywords>" --yes` — it
-   re-runs the safety check and adds only servers marked `safe` (version-pinned) to
-   both `.mcp.json` (for Claude) and `.cursor/mcp.json` (for Cursor). Prefer servers
-   marked `safe`. Any server that declares credentials/environment variables needs
-   them filled in by hand — note that in PLAN.md. For every server you add, record a
+   nothing). Then add each one worth using with the exact command printed under
+   it — `neptr mcp "<server name>" --yes` — which re-runs the safety check and
+   adds only servers marked `safe` (version-pinned) to both `.mcp.json` (for
+   Claude) and `.cursor/mcp.json` (for Cursor); never re-run a broad keyword
+   search with `--yes`, which would add every safe match. If the output says
+   GitHub rate-limited the safety checks, set `GITHUB_TOKEN` (or wait a few
+   minutes) and retry rather than concluding nothing fits. Any server that
+   declares credentials/environment variables needs them filled in by hand —
+   note that in PLAN.md. For every server you add, record a
    row in the **Recommended MCP servers** section of [../PLAN.md](../PLAN.md) with
    the concrete tasks it should be used for, and a row in the **Installed for this
    feature** section of [../NOTES.md](../NOTES.md) so the review phase can remove it.

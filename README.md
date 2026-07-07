@@ -61,10 +61,16 @@ phase removes whatever it installed once the feature is done.
 
 Inside a project, `neptr mcp <search terms>` searches the [official MCP
 registry](https://registry.modelcontextprotocol.io) (the upstream that GitHub's
-MCP registry mirrors) and runs its own safety check on each server, showing a
+MCP registry mirrors). The registry's own search is an unranked substring match,
+so NEPTR pulls a large pool, ranks it locally (verified vendors, then locally
+runnable + version-pinned servers), and — when the search term names a known
+vendor like "github" or "stripe" — queries that vendor's namespaces directly so
+the official server can't be buried by community listings. It then runs its own
+safety check on each top candidate, showing a
 transparent checklist: verified vendor (via the registry's DNS-verified
 namespace), repo activity and issue backlog (from the GitHub API — set
-`GITHUB_TOKEN` to raise the rate limit), broad-access surface, local/Docker
+`GITHUB_TOKEN` to raise the rate limit; results are cached for an hour so
+repeated searches don't re-spend it), broad-access surface, local/Docker
 runnability, and version pinning. Each server gets a **safe / caution / avoid**
 verdict; by default only `safe` servers are shown. Pass `--include-unverified` to
 also see `caution`/`avoid` servers with their checklists.

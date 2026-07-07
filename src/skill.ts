@@ -82,15 +82,39 @@ function verdictBadge(verdict: SecurityVerdict): string {
   }
 }
 
+interface InstallFailure {
+  source: string;
+  reason: string;
+}
+
+/** Distill an `npx skills add` failure into one line the user (or a planning
+ *  agent reading the output) can act on, instead of a bare "failed". */
+function installFailureReason(err: unknown): string {
+  const e = err as { stderr?: string; stdout?: string; shortMessage?: string; message?: string; timedOut?: boolean };
+  if (e?.timedOut) return "timed out after 3 minutes";
+  const output = [e?.stderr, e?.stdout]
+    .filter((s): s is string => Boolean(s))
+    .join("\n")
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: strips ANSI color codes, which start with ESC by definition
+    .replace(/\u001b\[[0-9;]*m/g, "");
+  const lastLine = output
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .pop();
+  const reason = lastLine || e?.shortMessage || e?.message || "unknown error";
+  return reason.length > 200 ? `${reason.slice(0, 200)}…` : reason;
+}
+
 /** Install each selected skill into the current project via `npx skills add`. */
-async function installSkills(sources: string[], cwd: string): Promise<{ ok: string[]; failed: string[] }> {
+async function installSkills(sources: string[], cwd: string): Promise<{ ok: string[]; failed: InstallFailure[] }> {
   const ok: string[] = [];
-  const failed: string[] = [];
+  const failed: InstallFailure[] = [];
   for (const source of sources) {
     // Last gate before the shell: never pass an unvetted string to `run`.
     if (!isSafeInstallArg(source)) {
       neptr.warn(`Skipping "${source}" — not a plain owner/repo@skill source.`);
-      failed.push(source);
+      failed.push({ source, reason: "not a plain owner/repo@skill source" });
       continue;
     }
     try {
@@ -100,8 +124,8 @@ async function installSkills(sources: string[], cwd: string): Promise<{ ok: stri
         timeout: 180_000,
       });
       ok.push(source);
-    } catch {
-      failed.push(source);
+    } catch (err) {
+      failed.push({ source, reason: installFailureReason(err) });
     }
   }
   return { ok, failed };
@@ -147,7 +171,7 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
     }
     const spin = p.spinner();
     spin.start(`Installing ${term}`);
-    const { ok } = await installSkills([term], cwd);
+    const { ok, failed } = await installSkills([term], cwd);
     if (ok.length) {
       spin.stop(`${pc.green("✔")} installed ${term}`);
       p.note(`${pc.green("✔")} ${term}`, "Added to .agents/skills/");
@@ -155,7 +179,7 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
       p.outro("NEPTR baked in a new skill!");
     } else {
       spin.stop(`${pc.red("✘")} could not install ${term}`);
-      neptr.warn(`Install failed — retry: npx skills add ${term} --agent universal`);
+      neptr.warn(`Install failed (${failed[0]?.reason}) — retry: npx skills add ${term} --agent universal`);
       p.outro("That one burnt — try again.");
       process.exitCode = 1;
     }
@@ -245,7 +269,11 @@ export async function runSkill(query: string | undefined, flags: SkillFlags): Pr
   }
   if (failed.length) {
     p.note(
-      failed.map((s) => `${pc.red("✘")} ${s}\n   → retry: npx skills add ${s} --agent universal`).join("\n"),
+      failed
+        .map(
+          (f) => `${pc.red("✘")} ${f.source} — ${f.reason}\n   → retry: npx skills add ${f.source} --agent universal`,
+        )
+        .join("\n"),
       "These need a hand",
     );
   }

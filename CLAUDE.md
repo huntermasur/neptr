@@ -113,9 +113,17 @@ Docker.
   and a tracked `.githooks/pre-commit` (activated by `git.ts` setting `core.hooksPath`).
 - `src/mcp.ts` / `src/mcp-registry.ts` — `neptr mcp`: searches the official MCP
   registry (`registry.modelcontextprotocol.io/v0/servers` — the upstream GitHub's
-  MCP registry mirrors), then runs its own transparent safety check per server
-  (verified-vendor namespace, GitHub repo activity/issues, broad-access keyword
-  scan, local/Docker runnability, version pinning) yielding a safe/caution/avoid
+  MCP registry mirrors). The registry search is an unranked substring match, so
+  `gatherMcpCandidates` pulls a 100-server pool, merges in direct known-vendor
+  namespace queries when the term names one (`searchKnownVendors` — "github"
+  alone never surfaces `io.github.github/*` otherwise), and ranks locally
+  (`rankServers`: vendor > runnable > pinned; non-active sinks) before verifying
+  only the top `--limit`. It then runs its own transparent safety check per
+  server (verified-vendor namespace, GitHub repo activity/issues — cached 1h in
+  the OS temp dir so the plan phase's `--search-only` → `--yes` double pass
+  doesn't re-spend the anon rate limit, with a rate-limit-aware empty-list
+  message — broad-access keyword scan, local/Docker runnability, version
+  pinning incl. explicit OCI image tags) yielding a safe/caution/avoid
   verdict. Merges selected servers (safe by default; caution/avoid only via an
   explicit `--include-unverified` interactive opt-in — `--yes` stays restricted
   to safe) into **both** `.mcp.json` (Claude) and

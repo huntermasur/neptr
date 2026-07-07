@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   checkBroadAccess,
@@ -11,6 +14,7 @@ import {
   parseGithubRepo,
   parseNamespace,
   type RegistryServer,
+  rankServers,
   searchMcpServers,
   verifyServer,
 } from "../src/mcp-registry.js";
@@ -171,6 +175,15 @@ describe("verifier checks", () => {
       checkVersionPin({ ...npmServer, packages: [{ registryType: "npm", identifier: "x", hasEnvVars: false }] }).status,
     ).toBe("warn");
   });
+
+  it("treats an explicit non-latest OCI image tag as a version pin", () => {
+    const oci = (identifier: string) =>
+      checkVersionPin({ ...npmServer, packages: [{ registryType: "oci" as const, identifier, hasEnvVars: false }] });
+    expect(oci("ghcr.io/github/github-mcp-server:1.0.0").status).toBe("ok");
+    expect(oci("ghcr.io/github/github-mcp-server:1.0.0").detail).toContain("1.0.0");
+    expect(oci("ghcr.io/x/y:latest").status).toBe("warn");
+    expect(oci("ghcr.io/x/y").status).toBe("warn");
+  });
 });
 
 describe("verifyServer verdicts", () => {
@@ -232,6 +245,41 @@ describe("searchMcpServers", () => {
   });
 });
 
+describe("rankServers", () => {
+  const junk: RegistryServer = {
+    name: "ai.smithery/random-wrapper",
+    description: "hosted wrapper",
+    repositoryUrl: undefined,
+    packages: [],
+    remotes: [{ type: "http", url: "https://x/sse" }],
+  };
+  const communityPinned: RegistryServer = {
+    ...npmServer,
+    name: "io.github.dev/tool",
+    packages: [{ registryType: "npm", identifier: "tool", version: "1.0.0", hasEnvVars: false }],
+  };
+
+  it("puts verified vendors and runnable+pinned servers above remote-only junk", () => {
+    const ranked = rankServers([junk, communityPinned, npmServer]);
+    expect(ranked.map((s) => s.name)).toEqual([
+      "io.github.microsoft/playwright-mcp",
+      "io.github.dev/tool",
+      "ai.smithery/random-wrapper",
+    ]);
+  });
+
+  it("sinks non-active servers and keeps registry order for ties", () => {
+    const deprecated: RegistryServer = { ...npmServer, name: "io.github.microsoft/old", status: "deprecated" };
+    const junkTwin: RegistryServer = { ...junk, name: "ai.smithery/other-wrapper" };
+    const ranked = rankServers([deprecated, junk, junkTwin]);
+    expect(ranked.map((s) => s.name)).toEqual([
+      "ai.smithery/random-wrapper",
+      "ai.smithery/other-wrapper",
+      "io.github.microsoft/old",
+    ]);
+  });
+});
+
 describe("gatherMcpCandidates", () => {
   it("attaches verdicts and pinned configs, degrading gracefully on GitHub", async () => {
     const routes: Record<string, { status?: number; body: string }> = { "/v0/servers": { body: SEARCH_BODY } };
@@ -245,13 +293,120 @@ describe("gatherMcpCandidates", () => {
     // Vendor + active + local + pinned → safe (broad-access "browser" is only a note).
     expect(playwright?.verification.verdict).toBe("safe");
     expect(playwright?.serverConfig).toEqual({ type: "stdio", command: "npx", args: ["-y", "@playwright/mcp@0.3.1"] });
+    expect(playwright?.activityProbe).toBe("ok");
 
     // Archived repo → avoid.
     expect(oci?.verification.verdict).toBe("avoid");
     expect(oci?.serverConfig?.type).toBe("stdio");
 
-    // Remote-only, non-github repo → caution, http config.
+    // Remote-only, non-github repo → caution, http config, no probe to run.
     expect(remote?.verification.verdict).toBe("caution");
     expect(remote?.serverConfig).toEqual({ type: "http", url: "https://mcp.example.com/sse" });
+    expect(remote?.activityProbe).toBe("none");
+  });
+
+  it("ranks the pool before applying the limit, so junk-first search order cannot bury good servers", async () => {
+    // The registry lists an alphabetically-earlier remote-only server first;
+    // limit 1 must still surface the vendor server further down the pool.
+    const body = JSON.stringify({
+      servers: [
+        {
+          server: {
+            name: "ai.smithery/wrapper",
+            description: "hosted wrapper",
+            remotes: [{ type: "http", url: "https://x/sse" }],
+          },
+          _meta: {},
+        },
+        JSON.parse(SEARCH_BODY).servers[0],
+      ],
+    });
+    const fetchImpl = stubFetch({
+      "/v0/servers": { body },
+      "/repos/microsoft/playwright-mcp": { body: REPOS["/repos/microsoft/playwright-mcp"] as string },
+    });
+    const candidates = await gatherMcpCandidates("browser", { limit: 1, fetchImpl });
+    expect(candidates.map((c) => c.name)).toEqual(["io.github.microsoft/playwright-mcp"]);
+  });
+
+  it("merges known-vendor namespace results so a vendor-name query finds the official server", async () => {
+    // "github" substring-matches every io.github.* namespace, so the plain
+    // pool only contains community servers; the vendor supplement queries
+    // io.github.github / com.github directly.
+    const junkBody = JSON.stringify({
+      servers: [
+        {
+          server: {
+            name: "io.github.someone/gh-linter",
+            description: "community helper",
+            remotes: [{ type: "http", url: "https://x/sse" }],
+          },
+          _meta: {},
+        },
+      ],
+    });
+    const officialBody = JSON.stringify({
+      servers: [
+        {
+          server: {
+            name: "io.github.github/github-mcp-server",
+            description: "GitHub's official MCP server",
+            repository: { url: "https://github.com/github/github-mcp-server" },
+            packages: [{ registryType: "oci", identifier: "ghcr.io/github/github-mcp-server:1.0.0", version: "1.0.0" }],
+          },
+          _meta: { "io.modelcontextprotocol.registry/official": { status: "active" } },
+        },
+      ],
+    });
+    // Specific keys first: stubFetch picks the first route contained in the URL.
+    const fetchImpl = stubFetch({
+      "search=io.github.github": { body: officialBody },
+      "search=com.github": { body: JSON.stringify({ servers: [] }) },
+      "search=github": { body: junkBody },
+      "/repos/github/github-mcp-server": {
+        body: JSON.stringify({ pushed_at: "2026-06-20T00:00:00Z", archived: false, open_issues_count: 10 }),
+      },
+    });
+    const candidates = await gatherMcpCandidates("github", { limit: 1, fetchImpl });
+    expect(candidates.map((c) => c.name)).toEqual(["io.github.github/github-mcp-server"]);
+    expect(candidates[0]?.verification.verdict).toBe("safe");
+  });
+
+  it("flags failed GitHub probes so callers can tell rate limiting from a real safety verdict", async () => {
+    // GitHub route missing → 404 → activity null, but the repo URL is GitHub.
+    const fetchImpl = stubFetch({ "/v0/servers": { body: SEARCH_BODY } });
+    const candidates = await gatherMcpCandidates("browser", { limit: 20, fetchImpl });
+    expect(candidates[0]?.activityProbe).toBe("failed");
+    // Vendor server stays safe on unknown activity; the flag records the gap.
+    expect(candidates[0]?.verification.verdict).toBe("safe");
+  });
+
+  it("caches GitHub activity on disk and reuses it on the next invocation", async () => {
+    const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "neptr-mcp-test-"));
+    try {
+      let repoHits = 0;
+      const counting: FetchLike = (async (input: string | URL | Request) => {
+        const url = typeof input === "string" ? input : input.toString();
+        if (url.includes("/v0/servers")) return new Response(SEARCH_BODY, { status: 200 });
+        if (url.includes("/repos/")) {
+          repoHits++;
+          const key = Object.keys(REPOS).find((k) => url.includes(k));
+          return key ? new Response(REPOS[key] as string, { status: 200 }) : new Response("nope", { status: 404 });
+        }
+        return new Response("not found", { status: 404 });
+      }) as FetchLike;
+
+      const first = await gatherMcpCandidates("browser", { limit: 20, fetchImpl: counting, cacheDir });
+      const hitsAfterFirst = repoHits;
+      expect(hitsAfterFirst).toBeGreaterThan(0);
+
+      const second = await gatherMcpCandidates("browser", { limit: 20, fetchImpl: counting, cacheDir });
+      // Both GitHub-backed servers resolved from cache — no extra API spend.
+      expect(repoHits).toBe(hitsAfterFirst);
+      expect(second[0]?.verification.verdict).toBe(first[0]?.verification.verdict);
+      expect(second[0]?.activityProbe).toBe("ok");
+    } finally {
+      fs.rmSync(cacheDir, { recursive: true, force: true });
+    }
   });
 });

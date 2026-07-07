@@ -13,6 +13,9 @@
  * (see `verifyServer` / `fetchRepoActivity`).
  */
 
+import fs from "node:fs";
+import path from "node:path";
+
 const BASE = "https://registry.modelcontextprotocol.io";
 const GITHUB_API = "https://api.github.com";
 
@@ -83,6 +86,10 @@ export interface McpCandidate extends RegistryServer {
   verification: Verification;
   /** Config for `.mcp.json`, or null when we cannot derive a launch command. */
   serverConfig: McpServerConfig | null;
+  /** Outcome of the GitHub repo-activity probe: `failed` means the server has a
+   *  GitHub repo but the lookup failed (network error / rate limit), so its
+   *  verdict may read "caution" for lack of evidence rather than real risk. */
+  activityProbe: "ok" | "failed" | "none";
 }
 
 async function fetchJson(
@@ -350,6 +357,14 @@ export function checkVersionPin(server: RegistryServer): Check {
   if (pkg?.version) {
     return { id: "version", label: "Version pinning", status: "ok", detail: `pinned to ${pkg.version}` };
   }
+  // Many OCI listings (e.g. GitHub's official server) omit the version field
+  // but carry it in the image tag — an explicit non-latest tag is a pin.
+  if (pkg?.registryType === "oci") {
+    const tag = /:([\w][\w.-]*)$/.exec(pkg.identifier)?.[1];
+    if (tag && tag.toLowerCase() !== "latest") {
+      return { id: "version", label: "Version pinning", status: "ok", detail: `pinned to image tag ${tag}` };
+    }
+  }
   return {
     id: "version",
     label: "Version pinning",
@@ -492,28 +507,129 @@ async function mapPool<T, R>(items: T[], limit: number, fn: (item: T, index: num
   return results;
 }
 
+/**
+ * How many servers to pull from the registry before ranking locally. The
+ * registry's search is an unranked substring match returned in rough namespace
+ * order, so truncating at the display limit would keep the alphabetically
+ * first servers and bury well-known ones further down the list.
+ */
+const SEARCH_POOL = 100;
+
+/**
+ * Order a search pool by registry metadata alone (no network calls): verified
+ * vendors first, then locally runnable and version-pinned servers; anything
+ * the registry no longer marks `active` sinks. Stable, so the registry's own
+ * order breaks ties.
+ */
+export function rankServers(servers: RegistryServer[]): RegistryServer[] {
+  const score = (s: RegistryServer): number => {
+    let n = 0;
+    if (checkVendor(s.name).status === "ok") n += 4;
+    if (checkRunnable(s).status === "ok") n += 2;
+    if (checkVersionPin(s).status === "ok") n += 1;
+    if (s.status && s.status !== "active") n -= 8;
+    return n;
+  };
+  return servers
+    .map((server, index) => ({ server, index, score: score(server) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.server);
+}
+
+/**
+ * A query that names a known vendor (e.g. "github", "stripe") is usually after
+ * that vendor's official server, but the registry's substring search buries
+ * it: "github" matches every `io.github.*` namespace, so even a large pool
+ * fills up with alphabetically earlier community servers. Query the matching
+ * vendor namespaces directly and merge the results into the pool.
+ */
+async function searchKnownVendors(query: string, fetchImpl: FetchLike): Promise<RegistryServer[]> {
+  const q = query.trim().toLowerCase();
+  if (q.length < 3) return [];
+  const prefixes = Object.entries(KNOWN_VENDORS)
+    .filter(([, vendor]) => vendor.toLowerCase().includes(q))
+    .map(([prefix]) => prefix);
+  if (prefixes.length === 0) return [];
+  const batches = await Promise.all(prefixes.map((prefix) => searchMcpServers(prefix, 20, fetchImpl).catch(() => [])));
+  return batches.flat();
+}
+
+/** Cached activity entries expire after an hour — long enough to span a plan
+ *  session's `--search-only` → `--yes` double pass without re-spending the
+ *  GitHub rate limit, short enough to notice a repo being archived. */
+const ACTIVITY_CACHE_TTL_MS = 60 * 60 * 1000;
+
+type ActivityCache = Record<string, { activity: RepoActivity; fetchedAt: string }>;
+
+function readActivityCache(file: string): ActivityCache {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as ActivityCache;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export interface GatherMcpOptions {
-  /** Max number of servers to search for, verify, and offer to the user. */
+  /** Max number of servers to verify and offer to the user (the search pool
+   *  is larger — see SEARCH_POOL — and ranked before this cut). */
   limit: number;
   fetchImpl?: FetchLike;
   /** Optional GitHub token to raise the 60/hr anonymous rate limit. */
   githubToken?: string;
+  /** Directory for the GitHub-activity cache file; omit to skip caching. */
+  cacheDir?: string;
 }
 
 /**
- * Search the registry, then verify each server against the safety criteria —
- * fetching GitHub repo activity concurrently (kept low to respect the anon rate
- * limit) and attaching a pinned launch config.
+ * Search the registry, rank the pool locally, then verify the top `limit`
+ * servers against the safety criteria — fetching GitHub repo activity
+ * concurrently (kept low to respect the anon rate limit, and cached on disk
+ * across invocations) and attaching a pinned launch config.
  */
 export async function gatherMcpCandidates(query: string, options: GatherMcpOptions): Promise<McpCandidate[]> {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const servers = await searchMcpServers(query, options.limit, fetchImpl);
-  const activities = await mapPool(servers, 4, (s) =>
-    fetchRepoActivity(s.repositoryUrl, fetchImpl, options.githubToken),
-  );
-  return servers.map((server, i) => ({
-    ...server,
-    verification: verifyServer(server, activities[i] ?? null),
-    serverConfig: deriveServerConfig(server),
-  }));
+  const [pool, vendorPool] = await Promise.all([
+    searchMcpServers(query, SEARCH_POOL, fetchImpl),
+    searchKnownVendors(query, fetchImpl),
+  ]);
+  const seen = new Set<string>();
+  const merged = [...vendorPool, ...pool].filter((s) => !seen.has(s.name) && Boolean(seen.add(s.name)));
+  const servers = rankServers(merged).slice(0, Math.max(0, options.limit));
+
+  const cacheFile = options.cacheDir ? path.join(options.cacheDir, "mcp-activity.json") : null;
+  const cache = cacheFile ? readActivityCache(cacheFile) : {};
+  const now = Date.now();
+
+  const activities = await mapPool(servers, 4, async (s) => {
+    const repo = parseGithubRepo(s.repositoryUrl);
+    if (!repo) return null;
+    const key = `${repo.owner}/${repo.repo}`;
+    const hit = cache[key];
+    if (hit && now - new Date(hit.fetchedAt).getTime() < ACTIVITY_CACHE_TTL_MS) return hit.activity;
+    const activity = await fetchRepoActivity(s.repositoryUrl, fetchImpl, options.githubToken);
+    if (activity) cache[key] = { activity, fetchedAt: new Date(now).toISOString() };
+    return activity;
+  });
+
+  if (cacheFile && Object.keys(cache).length > 0) {
+    try {
+      fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+      fs.writeFileSync(cacheFile, JSON.stringify(cache));
+    } catch {
+      // The cache is best-effort; a read-only temp dir must not break search.
+    }
+  }
+
+  return servers.map((server, i) => {
+    const activity = activities[i] ?? null;
+    const activityProbe: McpCandidate["activityProbe"] =
+      parseGithubRepo(server.repositoryUrl) === null ? "none" : activity ? "ok" : "failed";
+    return {
+      ...server,
+      verification: verifyServer(server, activity),
+      serverConfig: deriveServerConfig(server),
+      activityProbe,
+    };
+  });
 }

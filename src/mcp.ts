@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -79,11 +80,14 @@ function checklistBlock(c: McpCandidate): string {
  * `neptr skill --search-only` planning mode so an agent can record servers,
  * their verdicts, and the exact install command.
  */
-function reportSearchOnly(term: string, shown: McpCandidate[], total: number): void {
+function reportSearchOnly(term: string, shown: McpCandidate[], total: number, activityUnavailable: boolean): void {
   if (shown.length === 0) {
     neptr.warn(
-      `Found ${total} MCP server(s) for "${term}", but none cleared the safety bar. ` +
-        `Re-run with --include-unverified to list them with their checklist.`,
+      activityUnavailable
+        ? `Found ${total} MCP server(s) for "${term}", but GitHub rate-limited the repo-activity checks, ` +
+            `so none could be verified safe. Wait a few minutes and retry, or set GITHUB_TOKEN to raise the limit.`
+        : `Found ${total} MCP server(s) for "${term}", but none cleared the safety bar. ` +
+            `Re-run with --include-unverified to list them with their checklist.`,
     );
     return;
   }
@@ -216,7 +220,12 @@ export async function runMcp(query: string | undefined, flags: McpFlags): Promis
   spinner.start(`Searching the MCP registry for "${term}"`);
   let candidates: McpCandidate[];
   try {
-    candidates = await gatherMcpCandidates(term, { limit, fetchImpl: fetch, githubToken });
+    candidates = await gatherMcpCandidates(term, {
+      limit,
+      fetchImpl: fetch,
+      githubToken,
+      cacheDir: path.join(os.tmpdir(), "neptr"),
+    });
   } catch (err) {
     spinner.stop(`${pc.red("✘")} search failed`);
     throw err;
@@ -236,16 +245,24 @@ export async function runMcp(query: string | undefined, flags: McpFlags): Promis
     ? [...candidates].sort((a, b) => VERDICT_ORDER[a.verification.verdict] - VERDICT_ORDER[b.verification.verdict])
     : candidates.filter((c) => c.verification.verdict === "safe");
 
+  // When every GitHub-backed candidate's activity probe failed, "caution" means
+  // rate-limited, not unsafe — say so instead of blaming the safety bar.
+  const probed = candidates.filter((c) => c.activityProbe !== "none");
+  const activityUnavailable = probed.length > 0 && probed.every((c) => c.activityProbe === "failed");
+
   if (flags.searchOnly) {
-    reportSearchOnly(term, shown, candidates.length);
+    reportSearchOnly(term, shown, candidates.length, activityUnavailable);
     p.outro("Search only — nothing installed.");
     return;
   }
 
   if (shown.length === 0) {
     neptr.warn(
-      `Found ${candidates.length} match(es), but none cleared the safety bar. ` +
-        `Re-run with --include-unverified to see them and their checklists.`,
+      activityUnavailable
+        ? `Found ${candidates.length} match(es), but GitHub rate-limited the repo-activity checks, ` +
+            `so none could be verified safe. Wait a few minutes and retry, or set GITHUB_TOKEN to raise the limit.`
+        : `Found ${candidates.length} match(es), but none cleared the safety bar. ` +
+            `Re-run with --include-unverified to see them and their checklists.`,
     );
     p.outro("Pie tin stays empty — nothing installed.");
     return;

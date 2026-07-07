@@ -246,6 +246,29 @@ Full plan context lives in the project README and CLAUDE.md.
 - [x] CLAUDE.md gained a "Working style" section with the same rules for agents
       working on neptr itself
 
+## M20 — Make plan-phase skill/MCP installs actually land (2026-07-06)
+- [x] `neptr mcp` search made robust: 100-server pool + local ranking
+      (`rankServers`: vendor > runnable > pinned, non-active sinks) +
+      known-vendor namespace supplement (`searchKnownVendors`), so e.g.
+      "github" now surfaces `io.github.github/github-mcp-server` ✓ safe at #1
+      instead of 12 alphabetical community servers
+- [x] GitHub rate limit no longer silently blocks installs: repo-activity
+      results cached 1h in the OS temp dir (spans `--search-only` → `--yes`),
+      `activityProbe` flag distinguishes rate-limiting from a real safety
+      rejection, and empty-list messages say so + point at `GITHUB_TOKEN`
+- [x] Version-pin check accepts explicit non-latest OCI image tags (GitHub's
+      official server was `caution` only because its version lives in the tag)
+- [x] `neptr skill` install failures surface the underlying `npx skills add`
+      error line instead of a bare "failed"
+- [x] Feature plan templates install via the exact ids printed by
+      `--search-only` (`owner/repo@slug` / server name), never keywords +
+      `--yes` (which bulk-installs every match)
+- [x] Verified: `npm run check` green (124 tests); live end-to-end in a scratch
+      project — `neptr mcp github --search-only` ranks the official server
+      first, `neptr mcp "io.github.github/github-mcp-server" --yes` pins
+      `ghcr.io/github/github-mcp-server:1.5.0` into both `.mcp.json` and
+      `.cursor/mcp.json`, cache file written
+
 ## Backlog (future ideas)
 - [ ] `neptr feature list` — show feature workspaces and their `Status:` lines
 - [ ] Live docker compose build verification once Docker Desktop is installed
