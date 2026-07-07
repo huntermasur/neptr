@@ -2,7 +2,7 @@
 
 The single starting point for understanding this codebase: where everything lives and
 which files matter most. **Agents: read this before your first change in a session.
-Everyone: update it whenever project structure changes.** Last updated: 2026-07-06.
+Everyone: update it whenever project structure changes.** Last updated: 2026-07-07.
 
 ## Documentation index
 

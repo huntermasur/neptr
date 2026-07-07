@@ -38,6 +38,7 @@ neptr new my-app --yes    # accept all defaults
 neptr doctor              # check your environment
 neptr adopt               # turn the current existing project into a NEPTR project
 neptr feature             # start a plan → implement → review feature workspace
+neptr clear               # remove feature workspaces created by `neptr feature`
 neptr skill web design    # find & install security-checked skills from skills.sh
 neptr mcp postgres        # find & install safety-checked MCP servers from the MCP registry
 neptr index               # rebuild the repo map Claude Code reads (auto-run by hooks)
@@ -178,6 +179,10 @@ Every prompt in `PROMPTS.md` carries a **Model** line. The planning agent sizes
 each one to the task's complexity and recommends a specific Claude Code / Cursor
 model (e.g. Fable 5 to plan, Haiku 4.5 for a mechanical milestone, Sonnet 5 for
 ordinary implementation), so you spend the big model only where it earns its keep.
+
+When a feature is finished (or abandoned), `neptr clear` removes its workspace
+folder(s) under `.docs/feature/`. Adoption workspaces from `neptr adopt` are not
+touched. Pass `--yes` to skip the confirmation prompt.
 
 ## Development
 

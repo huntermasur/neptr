@@ -21,7 +21,7 @@ Docker.
 - Test scaffolds go in a throwaway directory (scratchpad), never inside this repo
 
 ## Architecture
-- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `adopt`, `feature`, `skill`, `mcp`, `index`
+- `src/cli.ts` — commander entry point; subcommands: `new`, `doctor`, `adopt`, `feature`, `clear`, `skill`, `mcp`, `index`
 - `src/theme.ts` — NEPTR ASCII art, palette, quotes; all user-facing output goes through this
 - `src/wizard.ts` — @clack/prompts flow producing a `NEPTRConfig`
 - `src/prompts.ts` — shared clack helpers (`bail`, `ensure` cancel handling)
@@ -132,6 +132,9 @@ Docker.
   (npm → `npx -y <pkg>@<ver>`, PyPI → `uvx <pkg>@<ver>`, OCI → `docker run`).
   Mirrors `neptr skill`'s `--search-only`/`--yes` planning modes; honors
   `GITHUB_TOKEN` to raise the GitHub API rate limit, degrading to "unknown" on failure.
+- `src/clear.ts` — `neptr clear`: removes `.docs/feature/<slug>/` workspaces
+  scaffolded by `neptr feature` (identified by the STATUS.md log row); `neptr adopt`
+  workspaces are preserved. `--yes` skips the confirmation prompt.
 - `src/config.ts` — `NEPTRConfig` type, flag merging, `--yes` defaults
 - `src/template.ts` — copies `templates/` trees, replacing `{{var}}` placeholders
 - `src/run.ts` — execa wrapper (shell on Windows for .cmd shims; whitespace-bearing

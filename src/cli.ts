@@ -3,6 +3,7 @@ import * as p from "@clack/prompts";
 import { Command } from "commander";
 import pc from "picocolors";
 import { type AdoptFlags, runAdopt } from "./adopt.js";
+import { type ClearFlags, runClear } from "./clear.js";
 import { configFromFlags, type NEPTRConfig, type NewFlags } from "./config.js";
 import { doctor } from "./doctor.js";
 import { type FeatureFlags, runFeature } from "./feature.js";
@@ -261,6 +262,21 @@ program
     neptr.say(randomQuote());
     try {
       await runFeature(description, flags);
+    } catch (err) {
+      neptr.error(err instanceof Error ? err.message : String(err));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("clear")
+  .description("Remove feature workspaces in .docs/feature/ created by `neptr feature`")
+  .option("-y, --yes", "delete without prompting")
+  .action(async (flags: ClearFlags) => {
+    console.log(NEPTR_BANNER);
+    neptr.say(randomQuote());
+    try {
+      await runClear(flags);
     } catch (err) {
       neptr.error(err instanceof Error ? err.message : String(err));
       process.exitCode = 1;

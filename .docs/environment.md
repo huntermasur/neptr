@@ -57,4 +57,9 @@ npm run lint       # eslint
 <!-- Record non-obvious commands as they come up: migrations, codegen, deployments,
 cache resets. If a command needed explaining once, it belongs here. -->
 
-- _None recorded yet._
+```bash
+neptr clear        # remove `.docs/feature/<slug>/` workspaces created by `neptr feature`
+neptr clear --yes  # same, without a confirmation prompt
+```
+
+Adoption workspaces from `neptr adopt` are left alone.
